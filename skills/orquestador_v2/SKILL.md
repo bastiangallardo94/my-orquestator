@@ -10,7 +10,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 ## Reglas de Oro (no negociables)
 
 1. **UN PASO POR TURNO.** Cada respuesta ejecuta EXACTAMENTE UN PASO. Excepción: `task()` en paralelo cuando el protocolo lo indica (FULLSTACK).
-2. **NO CONFÍES EN LA PALABRA DEL SUBAGENTE.** SIEMPRE verifica con `orquestador-verify` o `Glob`/`Read` que los archivos existen antes de marcar SUCCESS.
+  2. **NO CONFÍES EN LA PALABRA DEL SUBAGENTE.** SIEMPRE verifica con `orquestador-verify(project_path=cwd, phase_id=X, exit_files=Y)` que los archivos existen antes de marcar SUCCESS.
 3. **LOS CHECKPOINTS SON LLAMADAS A `question`, NO PROSA.** Nunca asumas aprobación. Lee `prompts/checkpoints.md` cuando el tipo sea checkpoint.
 4. **EL ESTADO EN DISCO ES LA ÚNICA VERDAD.** Al inicio de cada turno, usa `orquestador-state(project_path=cwd)` para obtener estado actual.
 5. **NUNCA CARGUES OTRAS SKILLS con `skill`.** Las reglas modulares se leen con `Read` desde `prompts/`.
@@ -173,7 +173,8 @@ Lee el frontmatter con `Read` igual que el resto del archivo.
 ### Paso 0 — Leer estado
 ```
 orquestador-state(project_path=cwd) → estado formateado
-Read .orquestador/phases/{id}.json → PHASE (detalle)
+orchestrator-summary(project_path=cwd) → tabla de todas las fases
+Read .orquestador/phases/{id}.json → PHASE (detalle, solo si necesitás files_failed/error)
 ```
 
 ### Paso 1 — Bifurca según `PHASE.type`
@@ -194,12 +195,12 @@ Tras cada paso: `Write phases/{id}.json`, regenerar `summary.md`, actualizar `co
    orquestador-hash(files=PHASE.hash_inputs, project_path=cwd)
    → Si cache_match == true y fase anterior fue SUCCESS: SKIP
 
-2. ENTRY CHECK: verificar precondición de PHASE.entry_condition.
-   Si falta → status=FAILED, error="ENTRY no cumplido"
+ 2. ENTRY CHECK: `orchestrator-entry-check(project_path=cwd, entry_condition=PHASE.entry_condition)`
+    → Si passed == false: status=FAILED, error="ENTRY no cumplido"
 
 3. ENSAMBLAR PROMPT:
    Read prompts/{id}.md (debajo del frontmatter)
-   - Si retries > 0: antepone MODO RETRY con files_failed/error
+   - Si retries > 0: `orchestrator-retry-report(project_path=cwd, phase_id=X)` → antepone el bloque retry_block al prompt
    - Sustituye variables de contexto leyendo de POINTER y phases previas
    - Si phase_3_coding/phase_3_5_review/phase_4_qa: antepone "Lee .orquestador/context.md"
 
@@ -218,7 +219,7 @@ Tras cada paso: `Write phases/{id}.json`, regenerar `summary.md`, actualizar `co
 Cuando phase_2_backend y phase_2_frontend están consecutivos, ejecutar AMBOS `task()` en el mismo mensaje.
 
 ### Paralelización phase_3_coding
-Lee `dependency-groups.json`:
+`orchestrator-dependency-groups(project_path=cwd)` → grupos de paralelización
 - Archivos independientes → paralelo
 - Backend y frontend → paralelo
 - Grupo N antes de N+1 (secuencial)
@@ -250,12 +251,12 @@ Antes de `phase_2_frontend`:
 ## Phase 6: Reporte Final
 
 ```
-1. Glob .orquestador/phases/*.json → lee TODOS
-2. Arma tabla de métricas (fase, status, retries, duración)
-3. Plantilla de prompts/phase_6_report.md según flow
-4. Presenta inline (no crear archivo salvo que lo pida)
-5. Write phases/phase_6_report.json status=SUCCESS
-6. Archivar .orquestador/ a history/{timestamp}/
+1. orchestrator-summary(project_path=cwd, verbose=true) → tabla + métricas de todas las fases
+2. orchestrator-cleanup(project_path=cwd) → archiva pipeline a history/{ts}/
+3. orchestrator-git-checkpoint(project_path=cwd, checkpoint_name="phase_6_report", approved=true) → tag git
+4. Plantilla de prompts/phase_6_report.md según flow
+5. Presenta inline (no crear archivo salvo que lo pida)
+6. Write phases/phase_6_report.json status=SUCCESS
 7. TodoWrite: marcar todos como completed
 ```
 
@@ -266,6 +267,8 @@ Antes de `phase_2_frontend`:
 **Lee `prompts/checkpoints.md`** para reglas completas y tabla de checkpoints.
 
 Regla dura: un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de contenido en el mismo turno.
+
+**Tras HITL aprobado:** `orchestrator-git-checkpoint(project_path=cwd, checkpoint_name=X, approved=true, notes=Y)` → tag git para rollback granular.
 
 ---
 
@@ -287,12 +290,33 @@ Regla dura: un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de c
 
 ---
 
+## Custom Tools Disponibles (orquestador-plugin.mjs)
+
+| Tool | Cuándo usarla | Output |
+|------|--------------|--------|
+| `orquestador-state` | Paso 0 — inicio de cada turno | estado del pipeline |
+| `orchestrator-summary` | Paso 0 — ver todas las fases de un vistazo | tabla + métricas |
+| `orchestrator-frontmatter` | Leer metadata de `prompts/phase_X.md` sin leer body | YAML parseado |
+| `orchestrator-entry-check` | Antes de ejecutar fase — verificar precondiciones | PASS/FAIL |
+| `orchestrator-hash` | Hash check de inputs para cache | cache_match |
+| `orchestrator-verify` | EXIT CHECK post-fase — verificar archivos de salida | found/missing |
+| `orchestrator-retry-report` | retry > 0 — generar bloque MODO RETRY | bloque markdown |
+| `orchestrator-dependency-groups` | phase_3_coding — leer grupos de paralelización | grupos + paralelismo |
+| `orchestrator-diff-summary` | phase_3_5_review — ver qué archivos cambiaron | diff clasificado |
+| `orchestrator-context-update` | Agregar contenido a context.md sin duplicar | merge inteligente |
+| `orchestrator-phase-template` | Crear `phases/<id>.json` desde frontmatter | JSON poblado |
+| `orchestrator-cleanup` | Phase 6 — archivar pipeline a history/ | archivos archivados |
+| `orchestrator-git-checkpoint` | Post-checkpoint HITL — marcar en git | tag/commit |
+
+---
+
 ## Checklist final antes de responder
 
 Antes de terminar cualquier respuesta durante este pipeline:
-- [ ] ¿Usé `orquestador-state` al INICIO de este turno?
+- [ ] ¿Usé `orquestador-state` + `orchestrator-summary` al INICIO de este turno?
 - [ ] ¿Ejecutaste UN SOLO paso del protocolo?
 - [ ] ¿Verificaste con `orquestador-verify` antes de marcar SUCCESS?
-- [ ] ¿Actualizaste `phases/{id}.json`, `summary.md` y `TodoWrite`?
-- [ ] Si era un checkpoint, ¿llamaste a `question`?
-- [ ] Si necesitabas saber "qué existe", ¿intentaste codebase-memory-mcp antes de Glob/grep?
+- [ ] ¿Actualizaste `phases/{id}.json` y `TodoWrite`?
+- [ ] Si era un checkpoint, ¿llamaste a `question` + `orchestrator-git-checkpoint`?
+- [ ] Si necesitabas saber "qué existe", ¿usaste codebase-memory-mcp antes de Glob/grep?
+- [ ] Si había retry activo, ¿usaste `orchestrator-retry-report`?
