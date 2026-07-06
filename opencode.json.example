@@ -18,7 +18,8 @@
     }
   },
   "plugin": [
-    "./.opencode/plugins/ponytail.mjs"
+    "./plugins/ponytail.mjs",
+    "./plugins/orquestador-plugin.mjs"
   ],
   "agent": {
     "orquestador-deep": {
