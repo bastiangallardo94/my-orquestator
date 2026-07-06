@@ -1,0 +1,284 @@
+/* Importar Tailwind CSS (sin @tailwind base para evitar conflictos globales) */
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900');
+
+/* Reset de Tailwind Preflight aplicado solo dentro de .maintainers-scope */
+@layer components {
+
+    .maintainers-scope *,
+    .maintainers-scope *::before,
+    .maintainers-scope *::after {
+        box-sizing: border-box;
+        border-width: 0;
+        border-style: solid;
+        border-color: #e5e7eb;
+    }
+
+    .maintainers-scope {
+        line-height: 1.5;
+        -webkit-text-size-adjust: 100%;
+        -moz-tab-size: 4;
+        tab-size: 4;
+        font-family: Lato, sans-serif !important;
+        font-feature-settings: normal;
+        font-variation-settings: normal;
+        width: 100%;
+        height: 100%;
+    }
+
+    .maintainers-scope hr {
+        height: 0;
+        color: inherit;
+        border-top-width: 1px;
+    }
+
+    .maintainers-scope abbr:where([title]) {
+        text-decoration: underline dotted;
+    }
+
+    .maintainers-scope h1,
+    .maintainers-scope h2,
+    .maintainers-scope h3,
+    .maintainers-scope h4,
+    .maintainers-scope h5,
+    .maintainers-scope h6 {
+        font-size: inherit;
+        font-weight: inherit;
+    }
+
+    .maintainers-scope a {
+        color: inherit;
+        text-decoration: inherit;
+    }
+
+    .maintainers-scope b,
+    .maintainers-scope strong {
+        font-weight: bolder;
+    }
+
+    .maintainers-scope code,
+    .maintainers-scope kbd,
+    .maintainers-scope samp,
+    .maintainers-scope pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 1em;
+    }
+
+    .maintainers-scope small {
+        font-size: 80%;
+    }
+
+    .maintainers-scope sub,
+    .maintainers-scope sup {
+        font-size: 75%;
+        line-height: 0;
+        position: relative;
+        vertical-align: baseline;
+    }
+
+    .maintainers-scope sub {
+        bottom: -0.25em;
+    }
+
+    .maintainers-scope sup {
+        top: -0.5em;
+    }
+
+    .maintainers-scope table {
+        text-indent: 0;
+        border-color: inherit;
+        border-collapse: collapse;
+    }
+
+
+    .maintainers-scope input,
+    .maintainers-scope optgroup,
+    .maintainers-scope select,
+    .maintainers-scope textarea {
+        font-family: inherit;
+        font-feature-settings: inherit;
+        font-variation-settings: inherit;
+        font-size: 100%;
+        font-weight: inherit;
+        line-height: inherit;
+        color: inherit;
+        margin: 0;
+        padding: 0;
+    }
+
+    .maintainers-scope button,
+    .maintainers-scope select {
+        text-transform: none;
+    }
+
+    .maintainers-scope button,
+    .maintainers-scope [type='button'],
+    .maintainers-scope [type='reset'],
+    .maintainers-scope [type='submit'] {
+        -webkit-appearance: button;
+        background-image: none;
+    }
+
+    .maintainers-scope :-moz-focusring {
+        outline: auto;
+    }
+
+    .maintainers-scope :-moz-ui-invalid {
+        box-shadow: none;
+    }
+
+    .maintainers-scope progress {
+        vertical-align: baseline;
+    }
+
+    .maintainers-scope ::-webkit-inner-spin-button,
+    .maintainers-scope ::-webkit-outer-spin-button {
+        height: auto;
+    }
+
+    .maintainers-scope [type='search'] {
+        -webkit-appearance: textfield;
+        outline-offset: -2px;
+    }
+
+    .maintainers-scope ::-webkit-search-decoration {
+        -webkit-appearance: none;
+    }
+
+    .maintainers-scope ::-webkit-file-upload-button {
+        -webkit-appearance: button;
+        font: inherit;
+    }
+
+    .maintainers-scope summary {
+        display: list-item;
+    }
+
+    .maintainers-scope blockquote,
+    .maintainers-scope dl,
+    .maintainers-scope dd,
+    .maintainers-scope h1,
+    .maintainers-scope h2,
+    .maintainers-scope h3,
+    .maintainers-scope h4,
+    .maintainers-scope h5,
+    .maintainers-scope h6,
+    .maintainers-scope hr,
+    .maintainers-scope figure,
+    .maintainers-scope p,
+    .maintainers-scope pre {
+        margin: 0;
+    }
+
+    .maintainers-scope fieldset {
+        margin: 0;
+        padding: 0;
+    }
+
+    .maintainers-scope legend {
+        padding: 0;
+    }
+
+    .maintainers-scope ol,
+    .maintainers-scope ul,
+    .maintainers-scope menu {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .maintainers-scope dialog {
+        padding: 0;
+    }
+
+    .maintainers-scope textarea {
+        resize: vertical;
+    }
+
+    .maintainers-scope input::placeholder,
+    .maintainers-scope textarea::placeholder {
+        opacity: 1;
+        color: #9ca3af;
+    }
+
+    .maintainers-scope button,
+    .maintainers-scope [role="button"] {
+        cursor: pointer;
+    }
+
+    .maintainers-scope :disabled {
+        cursor: default;
+    }
+
+    .maintainers-scope img,
+    .maintainers-scope svg,
+    .maintainers-scope video,
+    .maintainers-scope canvas,
+    .maintainers-scope audio,
+    .maintainers-scope iframe,
+    .maintainers-scope embed,
+    .maintainers-scope object {
+        display: block;
+        vertical-align: middle;
+    }
+
+    .maintainers-scope img,
+    .maintainers-scope video {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .maintainers-scope [hidden] {
+        display: none;
+    }
+
+    .maint-justify-betweem {
+        justify-content: space-between;
+    }
+
+    .maint-home-card {
+        min-height: 140px;
+        width: 100%;
+    }
+}
+
+/* Componentes personalizados */
+@layer components {
+    .maint-card {
+        @apply maint-bg-white maint-rounded-lg maint-shadow-md maint-p-6;
+    }
+
+    .maint-btn {
+        @apply maint-px-4 maint-py-2 maint-rounded maint-font-medium maint-transition-colors;
+    }
+
+    .maint-btn-primary {
+        @apply maint-btn maint-bg-primary-500 maint-text-white hover:maint-bg-primary-600;
+    }
+
+    .maint-btn-secondary {
+        @apply maint-btn maint-bg-secondary-500 maint-text-white hover:maint-bg-secondary-600;
+    }
+}
+
+.table-skeleton div {
+    width: 100%;
+}
+
+#datepicker input::placeholder {
+    color: #333;
+}
+
+
+.datepicker-custom .react-datepicker-wrapper {
+    display: flex !important;
+}
+
+#datepicker .react-datepicker-wrapper {
+    padding: 15px 16px;
+    border-radius: 4px;
+    border: 1px solid #C2C2C2;
+    font-family: Lato, sans-serif;
+    width: 210px;
+}

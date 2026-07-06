@@ -1,0 +1,56 @@
+name: Pipeline CI Microservice
+on:
+  push:
+    branches:
+      - develop
+      - feature/**
+      - uat
+      - release/**
+      - main
+      - master
+      - hotfix/**
+      - "v*.*.*"
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: falabella-stores-and-merchandise/FTI00382-merch-store-template/.github/workflows/build-node-generic-gcp-artefactory.yml@main
+    secrets: inherit
+    with:
+      # Use Node 18+ for Rspack compatibility
+      container_image: "gcr.io/fal-corp-stro-ops-prd/pipeline-node-sdk:20"
+      
+      # Install dependencies
+      # Note: Use yarn/npm/bun according to your project
+      command_dependency: "yarn install --ignore-scripts"
+      
+      # Build with Rspack
+      # Rspack is significantly faster than Webpack (5-10x)
+      command_build: "yarn run build"
+      
+      # Run tests with coverage
+      command_test: "npm run test:coverage"
+      
+      # Use configured runners
+      runners: ${{ vars.RUNNER_MERCH }}
+
+  deploy:
+    needs: build
+    permissions:
+      id-token: write
+      contents: write
+      issues: write
+    uses: falabella-stores-and-merchandise/FTI00382-merch-store-template/.github/workflows/deploy-cloud-storage-generic.yml@main
+    secrets: inherit
+    with:
+      language: "node"
+      country: "CL"
+      business: "FA"
+      runners: ${{ vars.RUNNER_MERCH }}
+      retail_type: "merch"

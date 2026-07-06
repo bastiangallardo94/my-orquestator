@@ -1,0 +1,117 @@
+{
+  "name": "rspack-bun-migration",
+  "version": "1.0.0",
+  "description": "Complete workflow to migrate frontend microfrontends to Rspack + Bun, adjusting scripts, CI/CD, Docker, lockfiles, and publishing changes to feature branch with PR. Includes troubleshooting for common Bun errors in pipelines and private registries.",
+  "author": "OpenCode",
+  "triggers": [
+    "migrate to rspack and bun",
+    "migrate to bun",
+    "replace npm with bun",
+    "replace yarn with bun",
+    "upgrade to bun",
+    "bun migration",
+    "rspack bun setup",
+    "standardize bun rspack"
+  ],
+  "tags": [
+    "bun",
+    "rspack",
+    "migration",
+    "bundler",
+    "package-manager",
+    "build-optimization",
+    "performance",
+    "typescript",
+    "react",
+    "module-federation",
+    "ci-cd",
+    "github-actions",
+    "gitlab-ci",
+    "docker",
+    "devops"
+  ],
+  "dependencies": {
+    "bun": ">=1.2.0",
+    "rspack": "^1.7.11",
+    "node": ">=18.0.0"
+  },
+  "references": [
+    {
+      "name": "Bun Documentation",
+      "url": "https://bun.sh/docs"
+    },
+    {
+      "name": "Rspack Documentation",
+      "url": "https://rspack.dev"
+    },
+    {
+      "name": "Bun in CI/CD",
+      "url": "https://bun.sh/docs/install/ci"
+    }
+  ],
+  "checklist": {
+    "preparation": [
+      "Verify repository is frontend with bundler",
+      "Confirm base and feature branch names",
+      "Check lockfile strategy (bun.lock + yarn.lock coexistence)",
+      "Verify access to private registries"
+    ],
+    "environment_setup": [
+      "Install Node 20 with nvm",
+      "Install Bun globally (latest version)",
+      "Verify Bun installation (bun -v)"
+    ],
+    "package_migration": [
+      "Update package.json scripts to use 'bun run'",
+      "Add test:coverage script if needed for CI",
+      "Generate bun.lock",
+      "Generate yarn.lock with 'bun install --yarn' if CI requires it",
+      "Update .gitignore (add package-json.lock, ensure bun.lock and yarn.lock are tracked)"
+    ],
+    "cicd_migration": [
+      "Update CI commands to use npx -y bun@version",
+      "Avoid command chaining with && in template fields",
+      "Set command_dependency, command_build, command_test individually",
+      "Verify Node version in CI (should be 20+)"
+    ],
+    "docker_migration": [
+      "Create multi-stage Dockerfile (builder + nginx)",
+      "Install Bun in builder stage",
+      "Copy package files and install with --frozen-lockfile",
+      "Build with 'bun run build'",
+      "Serve dist with nginx in production stage"
+    ],
+    "documentation": [
+      "Update README with Bun commands",
+      "Document 'bun install --yarn' workflow",
+      "Document 'bun add <package>' for dependencies"
+    ],
+    "validation": [
+      "Verify bun -v returns version > 1.2.x",
+      "Ensure bun.lock exists",
+      "Ensure yarn.lock exists if CI requires it",
+      "Verify .gitignore contains package-json.lock",
+      "Test CI workflow with Bun commands",
+      "Verify Dockerfile builds and runs correctly"
+    ],
+    "git_workflow": [
+      "Create feature branch",
+      "Commit all changes with descriptive message",
+      "Push to origin with -u flag",
+      "Create PR with summary of changes"
+    ]
+  },
+  "documentation": {
+    "main": "SKILL.md",
+    "troubleshooting": "TROUBLESHOOTING.md",
+    "docker": "DOCKER.md",
+    "cicd": "CICD.md"
+  },
+  "templates": {
+    "package_json": "templates/package.json.template",
+    "dockerfile": "templates/Dockerfile",
+    "github_workflow": "templates/.github/workflows/bun-workflow.yml",
+    "gitlab_ci": "templates/.gitlab-ci-bun.yml",
+    "gitignore": "templates/.gitignore"
+  }
+}

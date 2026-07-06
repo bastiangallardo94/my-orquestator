@@ -1,0 +1,36 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { RouterPage } from '../RouterPage';
+
+// Mock de react-i18next
+jest.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key: string) => key,
+        i18n: {
+            changeLanguage: jest.fn(),
+        },
+    }),
+}));
+
+// Mock del import de Module Federation
+jest.mock('importMaintainers/App', () => ({
+    default: () => <div data-testid="forwarder-mfe">Forwarder MFE Loaded</div>
+}), { virtual: true });
+
+describe('RouterPage', () => {
+    it('should render the page title', () => {
+        render(<RouterPage />);
+        expect(screen.getByText('common.maintainers')).toBeInTheDocument();
+    });
+
+    it('should render the Type Maintainer selector', () => {
+        render(<RouterPage />);
+        expect(screen.getByText('Type Maintainer:')).toBeInTheDocument();
+    });
+
+    it('should render empty state initially', () => {
+        render(<RouterPage />);
+        expect(screen.getByText('Please select the type of action you need to perform from the options above')).toBeInTheDocument();
+    });
+});

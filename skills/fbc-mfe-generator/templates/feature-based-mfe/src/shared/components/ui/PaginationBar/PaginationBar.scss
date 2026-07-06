@@ -1,0 +1,79 @@
+.pagination-bar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 8px 16px;
+  font-size: 14px;
+  color: #333333;
+  flex-wrap: wrap;
+  font-weight: 500;
+
+  .pagination-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .pagination-label {
+      color: #333333;
+    }
+
+    select.pagination-select,
+    input.pagination-input {
+      border: none;
+      border-bottom: 1px solid #999;
+      padding: 0;
+      font-size: 14px;
+      min-width: auto;
+    }
+
+    select.pagination-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background: transparent url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width=\"10\" height=\"6\" viewBox=\"0 0 10 6\"><path fill=\"%23666\" d=\"M0 0l5 6 5-6z\"/></svg>') no-repeat 35px center;
+      padding-right: 16px;
+      padding-left: 4px;
+      min-width: 50px;
+    }
+
+    input.pagination-input {
+      width: 30px;
+      text-align: center;
+    }
+  }
+
+  .pagination-pages {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .pagination-btn {
+      background: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      min-width: 20px;
+      min-height: 20px;
+      font-weight: 700 !important;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .pagination-btn.prev img,
+    .pagination-btn.next img {
+      margin: 0 auto;
+    }
+
+    .pagination-btn.active {
+      background: #0f2f5f;
+      color: #fff;
+      border-color: #0f2f5f;
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+}

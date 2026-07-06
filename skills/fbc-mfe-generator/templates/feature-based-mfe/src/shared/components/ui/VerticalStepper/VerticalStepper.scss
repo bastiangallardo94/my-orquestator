@@ -1,0 +1,101 @@
+.vertical-stepper {
+  display: flex;
+  flex-direction: column;
+  max-width: 520px;
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    padding-bottom: 24px;
+
+    &:last-child {
+      padding-bottom: 0;
+
+      .step-left::after {
+        display: none;
+      }
+    }
+
+    .step-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-right: 16px;
+      position: relative;
+
+      /* Connector line anchored under the circle */
+      &::after {
+        content: '';
+        position: absolute;
+        top: 35px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 100%;
+        background-color: #C2C2C2;
+      }
+
+      .step-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background-color: #FFF;
+        color: #C2C2C2;
+        font-family: 'Lato', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 0 0 2px #fff, 0 0 0 3px #C2C2C2;
+      }
+    }
+
+    .step-right {
+      flex: 1;
+      min-width: 0;
+
+      .step-label {
+        font-family: 'Lato', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        color: #333;
+      }
+
+      .step-description {
+        font-family: 'Lato', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        color: #333;
+        margin-top: 4px;
+        line-height: 1.45;
+      }
+    }
+
+    &.active {
+      .step-left .step-number {
+        background-color: #0D9BD3;
+        box-shadow: 0 0 0 2px #fff, 0 0 0 3px #0D9BD3;
+        color: #fff;
+      }
+      .step-left::after {
+        background-color: #0D9BD3;
+      }
+    }
+
+    &.completed {
+      .step-left .step-number {
+        background-color: #0D9BD3;
+        box-shadow: 0 0 0 2px #0D9BD3, 0 0 0 3px #0D9BD3;
+        color: #fff;
+        opacity: 0.85;
+      }
+      .step-left::after {
+        background-color: #0D9BD3;
+      }
+    }
+  }
+}

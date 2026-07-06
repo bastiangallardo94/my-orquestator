@@ -1,0 +1,111 @@
+{
+  "name": "rspack-environment-config",
+  "version": "1.0.0",
+  "description": "Comprehensive environment configuration pattern for Rspack projects with typed environment variables, .env file management, build-time injection, and Module Federation integration. Supports CommonJS and ES Modules with type safety.",
+  "author": "OpenCode",
+  "triggers": [
+    "setup environment variables",
+    "configure rspack environment",
+    "manage .env files",
+    "environment config rspack",
+    "typed environment variables",
+    "module federation environment",
+    "rspack env variables",
+    "centralize environment config"
+  ],
+  "tags": [
+    "rspack",
+    "environment-variables",
+    "dotenv",
+    "typescript",
+    "module-federation",
+    "build-configuration",
+    "type-safety",
+    "commonjs",
+    "esmodules",
+    "configuration-management"
+  ],
+  "dependencies": {
+    "rspack": ">=1.0.0",
+    "dotenv": "^16.0.0",
+    "node": ">=18.0.0",
+    "typescript": ">=5.0.0"
+  },
+  "references": [
+    {
+      "name": "Rspack Documentation",
+      "url": "https://rspack.dev"
+    },
+    {
+      "name": "Rspack DefinePlugin",
+      "url": "https://rspack.dev/plugins/webpack/define-plugin"
+    },
+    {
+      "name": "Module Federation",
+      "url": "https://module-federation.io/"
+    },
+    {
+      "name": "dotenv Documentation",
+      "url": "https://github.com/motdotla/dotenv"
+    }
+  ],
+  "checklist": {
+    "setup": [
+      "Create environment.config.js with typed schema",
+      "Create environment.config.ts TypeScript wrapper",
+      "Create .env files per environment (.env.development, .env.production)",
+      "Update rspack.config.js to load .env files",
+      "Configure DefinePlugin for runtime injection"
+    ],
+    "configuration": [
+      "Define ENV_CONFIG schema with types (string, number, boolean)",
+      "Implement parseEnvValue function for type conversion",
+      "Create get() function with validation",
+      "Export Environment object with camelCase properties",
+      "Export ENV object with UPPER_CASE properties for compatibility"
+    ],
+    "integration": [
+      "Update rspack.config.js to use Environment object",
+      "Update module-federation.config.js to use Environment",
+      "Configure DefinePlugin to inject env vars at build time",
+      "Add TypeScript path mappings if needed",
+      "Update imports in application code"
+    ],
+    "env_files": [
+      "Create .env.development with local defaults",
+      "Create .env.production with production values",
+      "Update .gitignore to exclude .env.local",
+      "Document required environment variables",
+      "Add .env.example template"
+    ],
+    "type_safety": [
+      "Define IEnvironment interface",
+      "Type Environment object properly",
+      "Export ENV with readonly types",
+      "Ensure parseEnvValue returns correct types",
+      "Add JSDoc comments for documentation"
+    ],
+    "validation": [
+      "Verify .env files load correctly in development",
+      "Verify .env files load correctly in production build",
+      "Test that process.env variables override defaults",
+      "Verify TypeScript compilation succeeds",
+      "Test runtime access to environment variables"
+    ]
+  },
+  "documentation": {
+    "main": "SKILL.md",
+    "architecture": "ARCHITECTURE.md",
+    "examples": "EXAMPLES.md",
+    "troubleshooting": "TROUBLESHOOTING.md"
+  },
+  "templates": {
+    "environment_config_js": "templates/environment.config.js",
+    "environment_config_ts": "templates/environment.config.ts",
+    "env_development": "templates/.env.development",
+    "env_production": "templates/.env.production",
+    "env_example": "templates/.env.example",
+    "rspack_config": "templates/rspack.config.js",
+    "module_federation_config": "templates/module-federation.config.js"
+  }
+}

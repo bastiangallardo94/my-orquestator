@@ -1,0 +1,79 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    uses: your-org/templates/.github/workflows/build-node-generic.yml@main
+    with:
+      # Use Node 20 for Bun compatibility
+      node-version: '20'
+      
+      # Container image (if using custom container)
+      container_image: "node:20-alpine"
+      
+      # Bun commands via npx (ensures Bun is available)
+      command_dependency: "npx -y bun@1.3.14 install --yarn --ignore-scripts"
+      command_build: "npx -y bun@1.3.14 run build"
+      command_test: "npx -y bun@1.3.14 run test:coverage"
+      
+      # Optional: environment variables
+      env_vars: |
+        NODE_ENV=production
+    
+    secrets: inherit
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npx -y bun@1.3.14 install --yarn
+      
+      - name: Run linter
+        run: npx -y bun@1.3.14 run lint
+      
+      - name: Type check
+        run: npx -y bun@1.3.14 run type-check
+
+  docker:
+    needs: [build, lint]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: gcr.io
+          username: _json_key
+          password: ${{ secrets.GCR_JSON_KEY }}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            gcr.io/${{ secrets.GCP_PROJECT }}/my-app:${{ github.sha }}
+            gcr.io/${{ secrets.GCP_PROJECT }}/my-app:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

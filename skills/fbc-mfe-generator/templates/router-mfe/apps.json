@@ -1,0 +1,10 @@
+[
+  {
+    "appName": "{{APP_NAME}}",
+    "componentImport": "{{APP_NAME}}/App",
+    "routes": "['{{APP_PATH}}']",
+    "show": "showWhenPrefix",
+    "appRemoteName": "{{APP_NAME}}",
+    "remote": "http://localhost:{{APP_PORT}}/remoteEntry.js"
+  }
+]

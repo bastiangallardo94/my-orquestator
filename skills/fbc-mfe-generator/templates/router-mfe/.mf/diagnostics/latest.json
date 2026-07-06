@@ -1,0 +1,10 @@
+{
+  "latestErrorEvent": {
+    "code": "TYPE-001",
+    "message": "Failed to generate type declaration. Execute the below cmd to reproduce and fix the error. #TYPE-001\nargs: {\"cmd\":\"yarn tsc --project /Users/bgallardoc/Documents/proyects/APP02696-mrch-frontend-cross-portal/packages/APP02272-mrch-frtr-frontend-maintainers-router/node_modules/.federation/tsconfig.cb01b7a5180d99acf376412fbb0b09bc.json\"}\nView the docs to see how to solve: https://module-federation.io/guide/troubleshooting/type#type-001",
+    "args": {
+      "cmd": "yarn tsc --project /Users/bgallardoc/Documents/proyects/APP02696-mrch-frontend-cross-portal/packages/APP02272-mrch-frtr-frontend-maintainers-router/node_modules/.federation/tsconfig.cb01b7a5180d99acf376412fbb0b09bc.json"
+    },
+    "timestamp": 1779809242514
+  }
+}

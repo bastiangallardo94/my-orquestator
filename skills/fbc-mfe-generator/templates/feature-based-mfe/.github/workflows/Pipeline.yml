@@ -1,0 +1,43 @@
+name: Pipeline CI Microservice
+on:
+  push:
+    branches:
+      - develop
+      - feature/**
+      - uat
+      - release/**
+      - main
+      - master
+      - hotfix/**
+      - "v*.*.*"
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    uses: falabella-stores-and-merchandise/FTI00382-merch-store-template/.github/workflows/build-node-generic-gcp-artefactory.yml@main
+    secrets: inherit
+    with:
+      container_image: "gcr.io/fal-corp-stro-ops-prd/pipeline-node-sdk:20"
+      command_dependency: "yarn install --ignore-scripts"
+      command_build: "yarn run build"
+      command_test: "npm run test:coverage"
+      runners: ${{ vars.RUNNER_MERCH }}
+
+  deploy:
+    needs: build
+    permissions:
+      id-token: write
+      contents: write
+      issues: write
+    uses: falabella-stores-and-merchandise/FTI00382-merch-store-template/.github/workflows/deploy-cloud-storage-generic.yml@main
+    secrets: inherit
+    with:
+      language: "node"
+      country: "CL"
+      business: "FA"
+      runners: ${{ vars.RUNNER_MERCH }}
+      retail_type: "merch"

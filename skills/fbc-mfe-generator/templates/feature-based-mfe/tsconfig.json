@@ -1,0 +1,59 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "esnext"
+        ],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "@emotion/react",
+        "types": [
+            "jest",
+            "node",
+            "react",
+            "react-dom",
+            "@testing-library/jest-dom"
+        ],
+        "baseUrl": "./",
+        "paths": {
+            "@context/*": [
+                "src/context/*"
+            ],
+            "@core/*": [
+                "src/core/*"
+            ],
+            "@features/*": [
+                "src/features/*"
+            ],
+            "@shared/*": [
+                "src/shared/*"
+            ],
+            "@infrastructure/*": [
+                "src/infrastructure/*"
+            ],
+            "@services/*": [
+                "src/services/*"
+            ],
+            "@types/*": [
+                "src/types/*"
+            ]
+        }
+    },
+    "include": [
+        "src",
+        "__mocks__/mockPurchaseOrdersData.ts"
+    ]
+}

@@ -1,0 +1,252 @@
+.drawer-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+ 
+  &.with-overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.drawer-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease-out;
+ 
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+.drawer {
+  position: absolute;
+  background-color: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  padding: 80px 10px 10px 10px;
+ 
+  &.drawer-left {
+    left: 0;
+    top: 0;
+    bottom: 0;
+    animation-name: slideInLeft;
+   
+    &.drawer-enter {
+      transform: translateX(-100%);
+    }
+  }
+ 
+  &.drawer-right {
+    right: 0;
+    top: 0;
+    bottom: 0;
+    animation-name: slideInRight;
+   
+    &.drawer-enter {
+      transform: translateX(100%);
+    }
+  }
+ 
+  &.drawer-top {
+    top: 0;
+    left: 0;
+    right: 0;
+    animation-name: slideInTop;
+   
+    &.drawer-enter {
+      transform: translateY(-100%);
+    }
+  }
+ 
+  &.drawer-bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    animation-name: slideInBottom;
+   
+    &.drawer-enter {
+      transform: translateY(100%);
+    }
+  }
+ 
+  &.drawer-sm {
+    width: 300px;
+  }
+ 
+  &.drawer-md {
+    width: 400px;
+  }
+ 
+  &.drawer-lg {
+    width: 600px;
+  }
+ 
+  &.drawer-xl {
+    width: 800px;
+  }
+ 
+  &.drawer-full {
+    width: 100%;
+  }
+ 
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+ 
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+ 
+  @keyframes slideInTop {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+ 
+  @keyframes slideInBottom {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+.drawer-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 20px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        color: #333;
+        margin-top: 10px;
+        
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+        }
+
+        thead tr {
+            background: #E7F5FB;
+            color: #2C3041;
+            font-weight: 600;
+        }
+        tbody tr {
+            border-bottom: 1px solid #F1F1F1;
+            font-weight: 400;
+        }
+    }
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+ 
+  .drawer-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+  }
+ 
+  .drawer-close-button {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #6b7280;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+   
+    &:hover {
+      background-color: #f3f4f6;
+      color: #374151;
+    }
+   
+    &:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.drawer-body {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    
+    &.scrollable {
+        overflow-y: auto;
+    }
+    
+}
+
+.drawer-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  flex-shrink: 0;
+ 
+  &.align-left {
+    text-align: left;
+  }
+ 
+  &.align-center {
+    text-align: center;
+  }
+ 
+  &.align-right {
+    text-align: right;
+  }
+ 
+  &.align-between {
+    display: flex;
+    justify-content: space-between;
+  }
+}

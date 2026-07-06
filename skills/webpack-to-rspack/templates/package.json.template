@@ -1,0 +1,33 @@
+{
+  "scripts": {
+    "build": "cross-env NODE_ENV=production rspack --mode production",
+    "build:dev": "cross-env NODE_ENV=development rspack --mode development",
+    "start": "cross-env NODE_ENV=development rspack serve --mode development",
+    "start:live": "cross-env NODE_ENV=development rspack serve --mode development --live-reload --hot",
+    "dev": "NODE_ENV=development rspack serve",
+    "serve": "NODE_ENV=production rspack serve",
+    "clean": "rm -rf dist",
+    "analyze": "NODE_ENV=production rspack --mode production --analyze",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --maxWorkers=2"
+  },
+  "devDependencies": {
+    "@rspack/cli": "^1.7.11",
+    "@rspack/core": "^1.7.11",
+    "@rspack/plugin-react-refresh": "^2.0.0",
+    "cross-env": "^7.0.3",
+    "dotenv": "^17.4.2",
+    "sass-embedded": "^1.99.0",
+    "sass-loader": "^16.0.7",
+    "css-loader": "6.10.0",
+    "style-loader": "4.0.0",
+    "postcss": "8.5.6",
+    "postcss-loader": "8.1.1",
+    "tailwindcss": "3.0.0",
+    "autoprefixer": "10.4.21"
+  }
+}

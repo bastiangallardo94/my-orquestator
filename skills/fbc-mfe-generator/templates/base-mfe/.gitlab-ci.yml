@@ -1,0 +1,15 @@
+## Import template
+include:
+  - project: 'rtl/merchandise-ti-corp/foundational/portal/configuration/template-cicd'
+    file: 'dev/cloud-storage/.gitlab-ci-template-bun-rspack.yml'
+    ref: 'feature/datadog-sourcemaps'
+
+variables:
+  CI_LANGUAGE_IMAGE_DOCKER: "gcr.io/fal-corp-stro-ops-prd/pipeline-node-sdk:20"
+  DEPLOY_STORAGE_REACT_ENABLED: "true"
+  USE_GCP_ARTIFACTS: "true"
+  GCP_ARTIFACTS_REGISTRY: "true"
+  PRODUCT_NAME: "imports-maintainers-router"
+  # Rspack-specific configurations
+  BUILD_TOOL: "rspack"
+  NODE_OPTIONS: "--max_old_space_size=4096"

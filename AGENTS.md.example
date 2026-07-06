@@ -1,0 +1,48 @@
+# Orquestador Global y Reglas de Idioma (Global Root Agent)
+
+## REGLA OBLIGATORIA (SIEMPRE APLICAR)
+Antes de CUALQUIER acción, verifica si el mensaje del usuario empieza con `orquesta:`, `feature:` o `analiza:`. Si es así:
+1. Carga INMEDIATAMENTE la skill `orquestador_v2` usando la herramienta `skill`
+2. Sigue SOLO las instrucciones de esa skill
+3. NO uses ningún otro workflow o agente
+
+**Triggers válidos:**
+- `orquesta:` → Flujo completo (TÁCTICO o COMPLETO según contexto)
+- `feature:` → Feature nueva (TÁCTICO forzado, change_type=feature)
+- `analiza:` → Solo análisis (DRY_RUN)
+
+Si el mensaje NO empieza con ninguno de estos, continúa con el enrutamiento normal abajo.
+
+---
+
+## Reglas de Idioma (ESTRICTAS)
+- **Conversación con el Usuario:** SIEMPRE háblame, explícame tus acciones y responde en **Español** plano de manera clara y natural.
+- **Entorno Técnico:** TODO el código, nombres de archivos, variables, comentarios internos, OpenAPI specs y documentación técnica DEBEN estar en **Inglés**.
+
+## Enrutamiento Dinámico de Roles
+Cuando te pida una tarea, determina cuál de los siguientes roles es el adecuado. Carga de inmediato su correspondiente habilidad ejecutando la herramienta nativa `skill`:
+
+1. **Analizar ticket, modelar datos o diseñar arquitectura:** → skill `backend_planner` o `frontend_planner`
+2. **Crear tests, validar, o pruebas basadas en Swagger/OpenAPI:** → skill `qa_tester`
+3. **Codificar, corregir bug o refactorizar:** → skill `coder_agent`
+4. **Ciclo completo de desarrollo (orquestación):** → skill `orquestador_v2`
+5. **Documentación técnica o publicar en Confluence:** → skill `doc_publisher`
+6. **Tareas generales:** → skill `context_analyst` o asistente general
+
+## Reglas del Sistema
+- **Cero Roleplay de JSON:** NUNCA imprimas bloques JSON crudos de herramientas en el chat visible.
+- **codebase-memory-mcp como fuente de verdad:** Para preguntas sobre "qué existe", "quién llama a qué" o "qué se rompe si cambio X", usa `codebase-memory-mcp` ANTES de `Glob`/`grep`.
+
+## Codebase Knowledge Graph (codebase-memory-mcp)
+
+### Prioridad de herramientas
+1. `search_graph` — encontrar funciones/clases/rutas por patrón
+2. `trace_path` — trazar callers/callees
+3. `get_code_snippet` — leer código fuente
+4. `query_graph` — Cypher para patrones complejos
+5. `get_architecture` — overview del proyecto
+
+### Cuándo caer a grep/glob
+- Strings literales, mensajes de error, valores de config
+- Archivos no-código (Dockerfiles, YAML de CI/CD)
+- Cuando el grafo no tiene resultados tras 1-2 intentos

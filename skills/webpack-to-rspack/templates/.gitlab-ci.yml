@@ -1,0 +1,26 @@
+## Import template
+include:
+  - project: 'rtl/merchandise-ti-corp/foundational/portal/configuration/template-cicd'
+    # Use Rspack-specific template (updated from Webpack)
+    # IMPORTANT: Rspack template uses 'bun' or 'npm' instead of 'webpack'
+    file: 'dev/cloud-storage/.gitlab-ci-template-bun-rspack.yml'
+    ref: 'feature/datadog-sourcemaps'
+
+variables:
+  # Node 18+ recommended for Rspack
+  CI_LANGUAGE_IMAGE_DOCKER: gcr.io/fal-corp-stro-ops-prd/pipeline-node-sdk:18
+  
+  # Enable React deployment to Cloud Storage
+  DEPLOY_STORAGE_REACT_ENABLED: true
+  
+  # Use GCP Artifacts Registry
+  GCP_ARTIFACTS_REGISTRY: true
+  
+  # Product name (update according to your project)
+  PRODUCT_NAME: 'imports-inspections'
+  
+  # Optional: Override build command if needed
+  # BUILD_COMMAND: 'npm run build'
+  
+  # Optional: Enable source map upload to Datadog
+  # DATADOG_SOURCEMAPS_ENABLED: true

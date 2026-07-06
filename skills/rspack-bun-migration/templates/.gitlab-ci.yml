@@ -1,0 +1,32 @@
+include:
+  - project: 'your-org/ci-templates'
+    file: '.gitlab-ci-template-node.yml'
+    ref: 'main'
+
+variables:
+  # Use Node 20 for Bun compatibility
+  CI_LANGUAGE_IMAGE_DOCKER: "node:20-alpine"
+  
+  # Bun commands via npx (ensures Bun is available)
+  COMMAND_DEPENDENCY: "npx -y bun@1.3.14 install --yarn --ignore-scripts"
+  COMMAND_BUILD: "npx -y bun@1.3.14 run build"
+  COMMAND_TEST: "npx -y bun@1.3.14 run test:coverage"
+  
+  # Optional: Set Node environment
+  NODE_ENV: "production"
+
+# Optional: Override stages if needed
+# stages:
+#   - test
+#   - build
+#   - deploy
+
+# Optional: Custom jobs
+# lint:
+#   stage: test
+#   script:
+#     - npx -y bun@1.3.14 run lint
+#   only:
+#     - merge_requests
+#     - main
+#     - develop

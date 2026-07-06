@@ -1,0 +1,283 @@
+/* Importar Tailwind CSS (sin @tailwind base para evitar conflictos globales) */
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900');
+
+/* Reset de Tailwind Preflight aplicado solo dentro de .mf-template-scope */
+@layer components {
+
+    .mf-template-scope *,
+    .mf-template-scope *::before,
+    .mf-template-scope *::after {
+
+    }
+
+    .mf-template-scope {
+        line-height: 1.5;
+        -webkit-text-size-adjust: 100%;
+        -moz-tab-size: 4;
+        tab-size: 4;
+        font-family: Lato, sans-serif !important;
+        font-feature-settings: normal;
+        font-variation-settings: normal;
+        width: 100%;
+    }
+
+    .mf-template-scope hr {
+        height: 0;
+        color: inherit;
+        border-top-width: 1px;
+    }
+
+    .mf-template-scope abbr:where([title]) {
+        text-decoration: underline dotted;
+    }
+
+    .mf-template-scope h1,
+    .mf-template-scope h2,
+    .mf-template-scope h3,
+    .mf-template-scope h4,
+    .mf-template-scope h5,
+    .mf-template-scope h6 {
+        font-size: inherit;
+        font-weight: inherit;
+    }
+
+    .mf-template-scope a {
+        color: inherit;
+        text-decoration: inherit;
+    }
+
+    .mf-template-scope b,
+    .mf-template-scope strong {
+        font-weight: bolder;
+    }
+
+    .mf-template-scope code,
+    .mf-template-scope kbd,
+    .mf-template-scope samp,
+    .mf-template-scope pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 1em;
+    }
+
+    .mf-template-scope small {
+        font-size: 80%;
+    }
+
+    .mf-template-scope sub,
+    .mf-template-scope sup {
+        font-size: 75%;
+        line-height: 0;
+        position: relative;
+        vertical-align: baseline;
+    }
+
+    .mf-template-scope sub {
+        bottom: -0.25em;
+    }
+
+    .mf-template-scope sup {
+        top: -0.5em;
+    }
+
+    .mf-template-scope table {
+        text-indent: 0;
+        border-color: inherit;
+        border-collapse: collapse;
+    }
+
+    .mf-template-scope button,
+    .mf-template-scope input,
+    .mf-template-scope optgroup,
+    .mf-template-scope select,
+    .mf-template-scope textarea {
+        font-family: inherit;
+        font-feature-settings: inherit;
+        font-variation-settings: inherit;
+        font-size: 100%;
+        font-weight: inherit;
+        line-height: inherit;
+
+    }
+
+    .mf-template-scope button,
+    .mf-template-scope select {
+        text-transform: none;
+    }
+
+    .mf-template-scope button,
+    .mf-template-scope [type='button'],
+    .mf-template-scope [type='reset'],
+    .mf-template-scope [type='submit'] {
+
+    }
+
+    .mf-template-scope :-moz-focusring {
+        outline: auto;
+    }
+
+    .mf-template-scope :-moz-ui-invalid {
+        box-shadow: none;
+    }
+
+    .mf-template-scope progress {
+        vertical-align: baseline;
+    }
+
+    .mf-template-scope ::-webkit-inner-spin-button,
+    .mf-template-scope ::-webkit-outer-spin-button {
+        height: auto;
+    }
+
+    .mf-template-scope [type='search'] {
+        -webkit-appearance: textfield;
+
+    }
+
+    .mf-template-scope ::-webkit-search-decoration {
+        -webkit-appearance: none;
+    }
+
+    .mf-template-scope ::-webkit-file-upload-button {
+        -webkit-appearance: button;
+        font: inherit;
+    }
+
+    .mf-template-scope summary {
+        display: list-item;
+    }
+
+    .mf-template-scope blockquote,
+    .mf-template-scope dl,
+    .mf-template-scope dd,
+    .mf-template-scope h1,
+    .mf-template-scope h2,
+    .mf-template-scope h3,
+    .mf-template-scope h4,
+    .mf-template-scope h5,
+    .mf-template-scope h6,
+    .mf-template-scope hr,
+    .mf-template-scope figure,
+    .mf-template-scope p,
+    .mf-template-scope pre {
+        margin: 0;
+    }
+
+    .mf-template-scope fieldset {
+        margin: 0;
+        padding: 0;
+    }
+
+    .mf-template-scope legend {
+        padding: 0;
+    }
+
+    .mf-template-scope ol,
+    .mf-template-scope ul,
+    .mf-template-scope menu {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .mf-template-scope dialog {
+        padding: 0;
+    }
+
+    .mf-template-scope textarea {
+        resize: vertical;
+    }
+
+    .mf-template-scope input::placeholder,
+    .mf-template-scope textarea::placeholder {
+        opacity: 1;
+        color: #9ca3af;
+    }
+
+    .mf-template-scope button,
+    .mf-template-scope [role="button"] {
+        cursor: pointer;
+    }
+
+    .mf-template-scope :disabled {
+        cursor: default;
+    }
+
+    .mf-template-scope img,
+    .mf-template-scope svg,
+    .mf-template-scope video,
+    .mf-template-scope canvas,
+    .mf-template-scope audio,
+    .mf-template-scope iframe,
+    .mf-template-scope embed,
+    .mf-template-scope object {
+        display: block;
+        vertical-align: middle;
+    }
+
+    .mf-template-scope img,
+    .mf-template-scope video {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .mf-template-scope [hidden] {
+        display: none;
+    }
+
+    .mf-justify-betweem {
+        justify-content: space-between;
+    }
+    .mf-home-card {
+        min-height: 140px;
+        width: 100%;
+    }
+}
+
+/* Componentes personalizados */
+@layer components {
+    .mf-card {
+        @apply mf-bg-white mf-rounded-lg mf-shadow-md mf-p-6;
+    }
+
+    .mf-btn {
+        @apply mf-px-4 mf-py-2 mf-rounded mf-font-medium mf-transition-colors;
+    }
+
+    .mf-btn-primary {
+        @apply mf-btn mf-bg-primary-500 mf-text-white hover:mf-bg-primary-600;
+    }
+
+    .mf-btn-secondary {
+        @apply mf-btn mf-bg-secondary-500 mf-text-white hover:mf-bg-secondary-600;
+    }
+}
+
+.table-skeleton div {
+    width: 100%;
+}
+
+#datepicker input::placeholder{
+  color: #333;
+}
+
+
+.datepicker-custom .react-datepicker-wrapper {
+    display: flex !important;
+}
+
+#datepicker .react-datepicker-popper {
+    z-index: 999 !important;
+}
+
+#datepicker .react-datepicker-wrapper {
+    padding: 15px 16px;
+    border-radius: 4px;
+    border: 1px solid #C2C2C2;
+    font-family: Lato, sans-serif;
+    width: 210px;
+}
+
+
+

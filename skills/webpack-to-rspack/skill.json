@@ -1,0 +1,122 @@
+{
+  "name": "webpack-to-rspack",
+  "version": "1.1.0",
+  "description": "Migrate JavaScript/TypeScript projects from Webpack to Rspack with optimized build performance, including CI/CD pipeline migration",
+  "author": "OpenCode",
+  "triggers": [
+    "migrate to rspack",
+    "replace webpack with rspack",
+    "upgrade to rspack",
+    "switch bundler to rspack",
+    "optimize build with rspack",
+    "convert to rspack",
+    "faster builds",
+    "update ci/cd to rspack",
+    "migrate pipeline to rspack"
+  ],
+  "tags": [
+    "webpack",
+    "rspack",
+    "migration",
+    "bundler",
+    "build-optimization",
+    "performance",
+    "typescript",
+    "react",
+    "module-federation",
+    "ci-cd",
+    "github-actions",
+    "gitlab-ci",
+    "devops"
+  ],
+  "dependencies": {
+    "rspack": "^1.7.11",
+    "node": ">=18.0.0"
+  },
+  "references": [
+    {
+      "name": "Rspack Official Docs",
+      "url": "https://rspack.dev"
+    },
+    {
+      "name": "Migration Guide",
+      "url": "https://rspack.dev/guide/migration/webpack"
+    },
+    {
+      "name": "SWC Documentation",
+      "url": "https://swc.rs"
+    },
+    {
+      "name": "GitHub Actions",
+      "url": "https://docs.github.com/en/actions"
+    },
+    {
+      "name": "GitLab CI",
+      "url": "https://docs.gitlab.com/ee/ci/"
+    }
+  ],
+  "examples": [
+    {
+      "project": "import-inspection",
+      "webpack_config": "/Users/bgallardoc/Documents/proyects/mrch.frontend.cross.portal/packages/mrch.frtr.frontend.inspection/webpack.config.js",
+      "rspack_config": "/Users/bgallardoc/Documents/proyects/APP02696-mrch-frontend-cross-portal/packages/inspection/rspack.config.js",
+      "github_workflow": "/Users/bgallardoc/Documents/proyects/APP02696-mrch-frontend-cross-portal/packages/inspection/.github/workflows/Pipeline.yml",
+      "gitlab_ci": "/Users/bgallardoc/Documents/proyects/APP02696-mrch-frontend-cross-portal/packages/inspection/.gitlab-ci.yml",
+      "performance_improvement": "5-10x faster builds (local and CI/CD)"
+    }
+  ],
+  "checklist": {
+    "preparation": [
+      "Backup webpack.config.js",
+      "Document current build times",
+      "List custom plugins",
+      "Review Module Federation setup",
+      "Document CI/CD pipeline configuration"
+    ],
+    "installation": [
+      "Uninstall Webpack packages",
+      "Install Rspack core",
+      "Install React Refresh plugin",
+      "Install cross-env"
+    ],
+    "configuration": [
+      "Create rspack.config.js",
+      "Create module-federation.config.js",
+      "Create environment.config.js",
+      "Create .env files",
+      "Update package.json scripts"
+    ],
+    "testing": [
+      "Test dev build",
+      "Test prod build",
+      "Verify HMR",
+      "Verify Module Federation",
+      "Check bundle sizes"
+    ],
+    "cicd": [
+      "Update GitHub Actions workflows (if applicable)",
+      "Update GitLab CI configuration (if applicable)",
+      "Update Node version to 18+",
+      "Set environment variables in CI/CD",
+      "Test build in CI/CD environment",
+      "Measure CI/CD performance improvements"
+    ]
+  },
+  "documentation": {
+    "main": "SKILL.md",
+    "comparison": "COMPARISON.md",
+    "example": "MIGRATION_EXAMPLE.md",
+    "cicd": "CICD_MIGRATION.md",
+    "readme": "README.md"
+  },
+  "templates": {
+    "config": "templates/rspack.config.js",
+    "module_federation": "templates/module-federation.config.js",
+    "environment": "templates/environment.config.js",
+    "env_dev": "templates/.env.development",
+    "env_prod": "templates/.env.production",
+    "package_json": "templates/package.json.template",
+    "github_workflow": "templates/.github/workflows/Pipeline.yml",
+    "gitlab_ci": "templates/.gitlab-ci.yml"
+  }
+}
