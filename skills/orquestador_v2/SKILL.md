@@ -102,6 +102,11 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 | 15 | phase_6_report | ✅ | ✅ | ✅ | ✅ | inline | inline | ✅ | report | — |
 | 16 | checkpoint_review | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | checkpoint | — |
 | 17 | checkpoint_test | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
+| B1 | phase_bugfix_analyze | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | deep |
+| B2 | checkpoint_bugfix_analyze | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
+| B3 | phase_bugfix_fix | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
+| B4 | phase_bugfix_revalidate | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
+| B5 | checkpoint_bugfix | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
 
 `*` Solo si `impact=FULLSTACK` (se lanzan en paralelo).
 
@@ -130,7 +135,11 @@ Flow = TEST. Lee `prompts/test_standalone.md`. Genera tests + coverage gaps. HIT
 ### 7. `refactor:` — Refactorización
 Flow = REFACTOR, change_type = "refactor". Sin phase_4_qa (validación es code review). Exit criteria: misma funcionalidad, mejor código.
 
-### 8. Jira ID (`PROJ-123`)
+### 8. `bugfix:` — Recovery desde Checkpoint
+Flow = BUGFIX_TACTICO. El pipeline anterior fue SUCCESS pero lo desplegado provocó un bug. Usa el último checkpoint git como contexto para análisis de causa raíz + fix mínimo.
+**Lee `prompts/bugfix_flow.md`** para el flujo completo (phases B1-B5).
+
+### 9. Jira ID (`PROJ-123`)
 Flow = COMPLETO. Equivalente a `orquesta:` con Jira detectado.
 
 ### Fallback (sin trigger)
@@ -140,7 +149,9 @@ Phase 0 completa normal.
 
 ## PHASE 0: Bootstrap
 
-**Lee `prompts/phase_0_bootstrap.md`** para los pasos completos.
+**Nota:** `bugfix:` no usa el bootstrap estándar. Su Phase 0.5 está en `prompts/bugfix_flow.md` — busca el último checkpoint git y pregunta al usuario antes de construir el pipeline.
+
+**Para todos los demás triggers, lee `prompts/phase_0_bootstrap.md`** para los pasos completos.
 
 Resumen: Detectar trigger → Health check MCP → Inferir impacto → Confirmar con `question()` → Bootstrap estado → Iniciar Protocolo de Bucle.
 

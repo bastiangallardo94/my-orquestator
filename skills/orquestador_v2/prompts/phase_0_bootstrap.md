@@ -14,6 +14,7 @@ Este módulo se lee UNA VEZ al inicio del pipeline. Ejecútalo cuando no exista 
 - `review:` → TRIGGER_MODE = "review"
 - `test:` → TRIGGER_MODE = "test"
 - `refactor:` → TRIGGER_MODE = "refactor"
+- `bugfix:` → TRIGGER_MODE = "bugfix"
 - Patrón Jira (`PROJ-123`, `APP02272-123`) → TRIGGER_MODE = "jira"
 - Ninguno → TRIGGER_MODE = "fallback"
 
@@ -28,6 +29,7 @@ Este módulo se lee UNA VEZ al inicio del pipeline. Ejecútalo cuando no exista 
 | `review:` | REVIEW | — | sí | sí |
 | `test:` | TEST | — | sí | sí |
 | `refactor:` | REFACTOR | "refactor" | sí | no |
+| `bugfix:` | BUGFIX_TACTICO | "bug_fix" | sí | sí (usa bugfix_flow.md) |
 | `jira:` | COMPLETO | pregunta | no | no |
 | `fallback` | inferido | pregunta | no | no |
 
@@ -101,6 +103,7 @@ question(questions=[
 **Excepciones:**
 - `analiza:` → Solo pregunta modelo, omite flow y change_type
 - `feature:` / `fix:` / `refactor:` → Solo pregunta modelo, omite change_type
+- `bugfix:` → Solo pregunta modelo (Phase 0.5 de bugfix_flow.md maneja la pregunta del checkpoint)
 - `review:` / `test:` → Solo pregunta modelo
 - `jira:` → Solo pregunta change_type y modelo
 

@@ -37,6 +37,8 @@ Un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de contenido en 
 | checkpoint_4 | "¿Apruebas QA para pasar a documentación/reporte?" | Aprobar / Revisar fallidos / Known issues | No |
 | checkpoint_review | "¿Qué hago con los hallazgos del review?" | Ejecutar correcciones / Solo documentar / Descartar | Solo flujo REVIEW |
 | checkpoint_test | "¿Qué hago con los tests?" | Ejecutar tests generados / Solo documentar gaps / Descartar | Solo flujo TEST |
+| checkpoint_bugfix_analyze | Mostrar docs/bugfix-analysis.md. "¿La hipótesis de causa raíz es correcta?" | Sí, continuar / Buscar en otro lado / Cerrar | Solo flujo BUGFIX |
+| checkpoint_bugfix | Mostrar docs/bugfix-results.md. "¿El fix resolvió el bug?" | Aprobar / Iterar fix / Descartar | Solo flujo BUGFIX |
 
 ---
 
@@ -122,3 +124,35 @@ El PIC se ejecuta como fase de agente. Resultado inline:
 - PASS → continuar
 - WARN → continuar
 - FAIL → retroceder a phase_2_backend/frontend
+
+---
+
+## Bugfix Checkpoints (flujo BUGFIX_TACTICO)
+
+El flujo completo de bugfix está en `prompts/bugfix_flow.md`. Aquí la referencia de sus HITL:
+
+### checkpoint_bugfix_analyze
+```
+question(
+  question: "Análisis completado. Hipótesis: {resumen}. ¿Continuamos?",
+  header: "Bugfix Analyze",
+  options: [
+    "Sí, el bug está en {archivos} — continuar con fix",
+    "No, buscar en otro lugar — iterar analyze",
+    "Cerrar — no era un bug del pipeline"
+  ]
+)
+```
+
+### checkpoint_bugfix (final)
+```
+question(
+  question: "Fix aplicado y revalidado. Veredicto: {veredicto}. ¿Qué hacemos?",
+  header: "Bugfix Complete",
+  options: [
+    "Aprobar — el bug está resuelto",
+    "Iterar fix — el veredicto es NEEDS_WORK",
+    "Descartar — revertir cambios"
+  ]
+)
+```
