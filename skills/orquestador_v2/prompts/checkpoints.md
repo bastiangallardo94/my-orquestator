@@ -4,6 +4,16 @@ Este módulo se lee solo cuando `PHASE.type == "checkpoint"`.
 
 ---
 
+## REGLA DE BLINDAJE (obligatoria para todos los checkpoints)
+
+1. **TODO checkpoint DEBE llamar a `question()`.** No existe auto-approve para checkpoint_1, checkpoint_2, checkpoint_3 ni checkpoint_4. Solo checkpoint_maps puede auto-aprobarse (coverage >= 80%).
+
+2. **Si llegas a un checkpoint sin haber llamado `question()`** en el turno anterior, el pipeline esta corrupto. RETROCEDE el current_index y RE-EJECUTA el checkpoint.
+
+3. **NUNCA asumas aprobacion.** Respuestas anteriores del usuario no constituyen aprobacion implicita para checkpoints futuros.
+
+---
+
 ## Regla Fundamental
 
 Un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de contenido en el mismo turno que un checkpoint.
@@ -31,8 +41,8 @@ Un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de contenido en 
 | checkpoint_id | Pregunta | Opciones | Condicional |
 |---|---|---|---|
 | checkpoint_maps | "¿Validamos los mapas de arquitectura?" | Ver detalles / Ignorar gaps | Auto-approve si coverage ≥ 80% |
-| checkpoint_1 | "¿La lógica de negocio y casos de uso son correctos?" | Aprobar / Rechazar / Ver detalle | No |
-| checkpoint_2 | "¿Apruebas el plan técnico para comenzar codificación?" | Aprobar / Rechazar / Ver plan | No |
+| checkpoint_1 | "¿La lógica de negocio y casos de uso son correctos?" | Aprobar / Rechazar / Ver detalle | No — BLINDAJE ACTIVO |
+| checkpoint_2 | "¿Apruebas el plan técnico para comenzar codificación?" | Aprobar / Rechazar / Ver plan | No — BLINDAJE ACTIVO |
 | checkpoint_3 | Mostrar resumen real: archivos, tests, cobertura, compile, lint, CR. Luego: "¿Apruebas?" | Aprobar / Ver detalle CR / Rechazar | No |
 | checkpoint_4 | "¿Apruebas QA para pasar a documentación/reporte?" | Aprobar / Revisar fallidos / Known issues | No |
 | checkpoint_review | "¿Qué hago con los hallazgos del review?" | Ejecutar correcciones / Solo documentar / Descartar | Solo flujo REVIEW |

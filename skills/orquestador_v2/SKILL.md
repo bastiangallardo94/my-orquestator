@@ -199,6 +199,16 @@ Read .orquestador/phases/{id}.json → PHASE (detalle, solo si necesitás files_
 - **`agent`** → ver "Ejecución de Fase Agente" abajo.
 - **`report`** → ver "Phase 6: Reporte Final" abajo.
 
+### REGLA DE BLINDAJE — NO SALTAR CHECKPOINTS
+
+Despues de cada fase tipo `agent`, la siguiente fase DEBE ser un `checkpoint`. Si no lo es, el pipeline esta corrupto. DETENTE y reporta error.
+
+**Prohibido terminantemente:**
+- Auto-aprobar un checkpoint sin `question()` (excepto checkpoint_maps con coverage >= 80%)
+- Ejecutar dos fases `agent` consecutivas sin checkpoint intermedio
+- Asumir aprobacion del usuario basado en conversacion anterior
+- Marcar un checkpoint como APPROVED sin haber llamado `question()`
+
 ### Paso 2 — Actualizar y comunicar
 Tras cada paso: `Write phases/{id}.json`, regenerar `summary.md`, actualizar `context.md`, `TodoWrite`, informar: *"✅ {fase} → {status}. Siguiente: {fase_siguiente}."*
 
