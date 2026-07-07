@@ -94,7 +94,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 | 7 | phase_2_7_pic | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
 | 8 | phase_2_8_dependency_analysis | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
 | 9 | phase_3_coding | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | agent | fast |
-| 10 | phase_3_5_review | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | agent | fast |
+| 10 | phase_3_5_review | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | agent | fast |
 | 11 | checkpoint_3 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | checkpoint | — |
 | 12 | phase_4_qa | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | agent | fast |
 | 13 | checkpoint_4 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
@@ -105,10 +105,15 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 | B1 | phase_bugfix_analyze | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | deep |
 | B2 | checkpoint_bugfix_analyze | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
 | B3 | phase_bugfix_fix | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
-| B4 | phase_bugfix_revalidate | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
+| B4 | phase_bugfix_revalidate | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | agent | fast |
 | B5 | checkpoint_bugfix | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
 
 `*` Solo si `impact=FULLSTACK` (se lanzan en paralelo).
+
+**TEST (Validación funcional):** Las fases marcadas con ✅ en la columna TEST son **OBLIGATORIAS** para validar flujos.phase_3_5_review y phase_bugfix_revalidate ejecutan validación SEGÚN `impact`:
+- **FRONTEND** → Playwright E2E
+- **BACKEND** → backend-api-qa MCP
+- **FULLSTACK** → ambos
 
 ---
 

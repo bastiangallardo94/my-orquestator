@@ -161,7 +161,7 @@ question(
 **Prompt del agente (orquestador-fast):**
 
 ```
-## Rol: QA — Revalidación post-fix
+## Rol: QA — Revalidación post-fix con Tests E2E
 
 ## Bug
 > {mensaje del usuario}
@@ -169,12 +169,30 @@ question(
 ## Fix aplicado
 Archivos modificados: {lista de phase_bugfix_fix.files_modified}
 
+## Flujo tocado (desde docs/bugfix-analysis.md)
+{identificar el flujo/feature afectada}
+
 ## Instrucciones
 1. Ejecutar tests de regresión: {tests listados en docs/bugfix-analysis.md}
 2. Ejecutar tests del área afectada
 3. Verificar compilación: {comando según stack}
 4. Si hay lint: ejecutar y reportar
-5. Generar `docs/bugfix-results.md`:
+
+## 5. VALIDACIÓN FUNCIONAL (según impact del _pointer.json)
+
+### SI impact == "FRONTEND" o "FULLSTACK" (con frontend):
+1. Leer docs/bugfix-analysis.md → flujos de frontend afectados
+2. Crear `tests/bugfix-{id}.spec.ts`:
+   - Test del flujo que estaba roto
+   - Test de regresión: flujos existentes siguen funcionando
+   - Selectores robustos: getByRole, data-testid
+   - NO texto hardcodeado (i18n)
+3. Ejecutar: `npx playwright test tests/bugfix-{id}.spec.ts --reporter=list`
+
+### SI impact == "BACKEND" o "FULLSTACK" (con backend):
+1. El MCP `backend-api-qa` se encarga de validar los endpoints automáticamente
+2. Verificar que los endpoints affected fueron probados
+3. Si hay nuevos endpoints → documentar en el reporte
 
 ## Template de docs/bugfix-results.md
 # Bugfix Results — {breve descripción}
@@ -190,6 +208,18 @@ Archivos modificados: {lista de phase_bugfix_fix.files_modified}
 - Lint: PASS / FAIL ({n} warnings)
 - Tests de regresión: {N} passing, {M} failing
 - Tests área afectada: {N} passing, {M} failing
+
+## Validación funcional
+
+### SI impact == "FRONTEND" o "FULLSTACK":
+- Tests Playwright creados: {N}
+- Status: PASS / FAIL
+- Detalle: {spec}: {pass|fail}
+
+### SI impact == "BACKEND" o "FULLSTACK":
+- backend-api-qa MCP validó endpoints affected
+- Status: PASS / FAIL
+- Endpoints validados: {lista}
 
 ## Veredicto
 {PASS / FAIL / NEEDS_WORK}

@@ -115,7 +115,32 @@ Escribir docs/code-review-report.md:
 - [OK / "Problema detectado: descripción"]
 
 ## Warnings
-[Lista de problemas encontrados o "Ninguno"]
+[Lista de problemas encontrados o "Ninguna"]
+
+## 4. VALIDACIÓN FUNCIONAL (según impact)
+
+### SI impact == "FRONTEND" o "FULLSTACK" (con frontend):
+
+1. Leer docs/Plan_Frontend.md → flujos de la nueva feature
+2. Generar `tests/{feature}-e2e.spec.ts` con:
+   - Flujo feliz (happy path)
+   - Casos de error
+   - Estados vacíos
+3. Ejecutar: `npx playwright test tests/{feature}-e2e.spec.ts --reporter=list`
+4. Reportar resultados
+
+### SI impact == "BACKEND" o "FULLSTACK" (con backend):
+
+1. El MCP `backend-api-qa` se encarga de validar los endpoints automáticamente
+2. Verificar que los endpoints de la feature fueron probados
+3. Si hay nuevos endpoints → documentar en el reporte: "endpoints validados por backend-api-qa MCP"
+
+### SI change_type == "bug_fix":
+
+1. Leer docs/bugfix-analysis.md → flujos afectados
+2. Si frontend → crear/actualizar test E2E de validación
+3. Si backend → backend-api-qa valida endpoints affected
+4. Ejecutar y reportar
 
 DEVUELVEME:
 - LINT_STATUS: PASS | FAIL
@@ -123,3 +148,6 @@ DEVUELVEME:
 - CR_SCORE: 0-100
 - CR_STATUS: PASS (>=70) | WARN (50-69) | FAIL (<50)
 - WARNINGS: [lista o vacío]
+- E2E_SPECS_CREATED: [lista de specs/playwright o "N/A (backend)"]
+- E2E_STATUS: PASS | FAIL | N/A
+- E2E_DETAIL: [{spec}: {pass|fail}] o "backend-api-qa MCP validated"
