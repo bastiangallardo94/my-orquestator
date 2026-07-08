@@ -46,7 +46,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
   "change_type": "feature | bug_fix | refactor",
   "phase_order": ["phase_1_analyze", "checkpoint_1", "..."],
   "current_index": 0,
-  "deep_model": "gpt-5.1-codex",
+  "deep_model": "gpt-5.1-codex | AGENTE_ACTUAL",
   "codebase_project": "Users-bgallardoc-proyecto | NO_DISPONIBLE",
   "mcp_available": true,
   "tools_detected": { "bd_mcp": {}, "rest_tester": {}, "codegen": {} },
@@ -230,7 +230,9 @@ Tras cada paso: `Write phases/{id}.json`, regenerar `summary.md`, actualizar `co
    - Sustituye variables de contexto leyendo de POINTER y phases previas
    - Si phase_3_coding/phase_3_5_review/phase_4_qa: antepone "Lee .orquestador/context.md"
 
-4. task(subagent_type=PHASE.agent, description="...", prompt=ensamblado)
+4. task(subagent_type=resolve_agent(PHASE.agent), description="...", prompt=ensamblado)
+   - Si `deep_model == "AGENTE_ACTUAL"` y `PHASE.agent == "orquestador-deep"` → usar `task(subagent_type="general")` (hereda el agente actual)
+   - En cualquier otro caso → usar `PHASE.agent` tal cual
 
 5. EXIT CHECK:
    orquestador-verify(phase_id=PHASE.id, exit_files=PHASE.exit_files, project_path=cwd)

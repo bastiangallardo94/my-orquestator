@@ -103,7 +103,8 @@ question(questions=[
     question: "¿Qué modelo para el agente deep?",
     header: "Modelo",
     options: [
-      "opencode/gpt-5.1-codex (Recomendado)",
+      "Heredar agente actual (Recomendado)",
+      "opencode/gpt-5.1-codex",
       "anthropic/claude-sonnet-4-20250514",
       "openai/gpt-4o"
     ]
