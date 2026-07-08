@@ -32,7 +32,9 @@ Si `codebase_project` (en .orquestador/_pointer.json) esta disponible:
 3. Si vas a MODIFICAR un componente/hook existente (no crearlo), `codebase-memory-mcp_
    trace_path(project, function_name=X, direction="inbound", risk_labels=true)` para
    saber que otros componentes lo consumen antes de cambiar su firma/props.
-Si `codebase_project` no esta disponible, procede solo con lectura de archivos (Read/Glob).
+4. Para buscar strings literales, configs o imports especificos:
+   usar `search_code(pattern="...", mode="compact")` — ver search_strategy.md
+Si `codebase_project` no esta disponible, proceder con search_strategy.md → FALLBACK (Glob/Read).
 
 ## Tests de Regresión
 Basado en ARCHIVOS_AFECTADOS y RIESGO_ROTURA del analisis de impacto (Phase 1), identifica:

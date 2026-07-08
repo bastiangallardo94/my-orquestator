@@ -126,10 +126,21 @@ question(questions=[
 - Si `mcp_available == true` y proyecto no indexado → `codebase-memory-mcp_index_repository(repo_path=cwd, mode="fast")`
 - Si falla → `codebase_project: "NO_DISPONIBLE"`, continuar sin grafo
 
-### 3.2 Construir phase_order
+### 3.2 Generar Config Map (si MCP disponible)
+- Si `codebase_project != "NO_DISPONIBLE"`:
+  1. `search_code(project, pattern="FROM|services|ports|image:", 
+       path_filter="docker|Dockerfile|compose", mode="files")` → Docker files
+  2. `search_code(project, pattern="process.env|import.meta.env|VITE_|REACT_APP_",
+       mode="compact", limit=20)` → Variables de entorno
+  3. `Glob("**/.env*")` + `Glob("**/Dockerfile*")` + `Glob("**/*docker-compose*")` → Fallback configs
+  4. `Glob("**/.github/workflows/*")` + `Glob("**/Jenkinsfile")` → CI/CD
+  5. Escribir `.orquestador/config-map.md` con el mapa de configuraciones
+- Si MCP no disponible → usar solo Glob para detectar configs basicos
+
+### 3.3 Construir phase_order
 Filtrar la Tabla Maestra según flow+impact confirmados.
 
-### 3.3 Escribir estado inicial
+### 3.4 Escribir estado inicial
 - `Write .orquestador/_pointer.json`
 - `Write .orquestador/phases/<cada id>.json` con `status: "PENDING"`
 - `Write .orquestador/summary.md` inicial

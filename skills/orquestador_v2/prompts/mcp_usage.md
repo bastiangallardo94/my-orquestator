@@ -1,36 +1,49 @@
 # Uso de codebase-memory-mcp
 
-Este módulo se lee solo cuando una fase necesita usar el grafo de código.
+Este modulo se lee solo cuando una fase necesita usar el grafo de codigo.
+
+---
+
+## Estrategia de Busqueda Unificada
+
+**Lee `prompts/search_strategy.md`** antes de cualquier busqueda. Ese modulo define:
+- Que tool MCP usar para cada tipo de busqueda
+- Cuando y como usar `search_code` (reemplaza a grep)
+- Cuando caer a Glob/grep como fallback
+- El mapa de necesidades → tool + modo
 
 ---
 
 ## Identificador del proyecto
 
-`codebase_project` (guardado en `_pointer.json`) es el identificador a pasar en TODAS las llamadas. Si vale `"NO_DISPONIBLE"`, salta directo a `Glob`/`grep`.
+`codebase_project` (guardado en `_pointer.json`) es el identificador a pasar en TODAS las llamadas. Si vale `"NO_DISPONIBLE"`, salta directo a `search_strategy.md` → seccion FALLBACK.
 
 ---
 
 ## Prioridad de herramientas
 
-Para cualquier pregunta sobre "qué existe", "quién llama a qué" o "qué se rompe si cambio X":
+Lee `prompts/search_strategy.md` para el flujo completo. Resumen rapido:
 
-1. **`search_graph`** — encontrar funciones/clases/rutas por patrón (`name_pattern`) o lenguaje natural (`query`). Usa `qn_pattern` para verificar un `qualified_name` exacto.
+1. **`search_graph`** — encontrar funciones/clases/rutas por nombre (`name_pattern`) o lenguaje natural (`query`).
 
-2. **`trace_path`** — quién llama a X (`direction="inbound"`) / qué llama X (`direction="outbound"`). Con `risk_labels=true` devuelve CRITICAL/HIGH/MEDIUM/LOW por cada caller según distancia de hop.
+2. **`search_code`** — buscar strings literales, configs, contenido de archivos. Reemplaza a grep. Modos: `compact` (firmas), `full` (con source), `files` (solo paths, reemplaza Glob).
 
-3. **`get_code_snippet`** — leer código real de una función/clase antes de planificar o codificar (para replicar convenciones existentes).
+3. **`trace_path`** — quién llama a X / qué llama X. Con `risk_labels=true`.
 
-4. **`query_graph`** — Cypher para métricas objetivas. Cada Function/Method trae `complexity`, `cognitive`, `loop_depth`, `transitive_loop_depth`, `linear_scan_in_loop`, `param_count`. El edge TESTS conecta un test con la función que cubre.
+4. **`get_code_snippet`** — leer código real de una función/clase.
 
-5. **`get_architecture`** — overview de paquetes/lenguajes/clusters (comunidades Leiden) y hotspots (funciones con fan_in alto = mayor riesgo).
+5. **`query_graph`** — Cypher para métricas (complejidad, cobertura, etc.).
+
+6. **`get_architecture`** — overview de paquetes/lenguajes/clusters.
 
 ---
 
-## Cuándo caer a Glob/grep
+## Cuándo caer a Glob/grep (ultimo recurso)
 
-- Strings literales, mensajes de error, valores de config
-- Archivos no-código (Dockerfiles, YAML de CI/CD)
-- Cuando el grafo devuelve 0 resultados tras 1-2 intentos
+- Archivos creados en ESTE pipeline (no indexados aún)
+- Verificar exit_files (archivos que el subagente acaba de crear)
+- Strings en archivos no-código que no están en el grafo
+- Cuando search_code devuelve 0 resultados tras 1-2 intentos
 
 ---
 

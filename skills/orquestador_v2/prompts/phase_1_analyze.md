@@ -32,8 +32,10 @@ MODO: {FLOW}  # COMPLETO | TÁCTICO | DRY_RUN
         cuales funciones/tests especificos podrian romperse, no solo el archivo).
      d. Si el cambio es una ruta HTTP/async, usa trace_path(mode="cross_service")
         para detectar impacto entre servicios (BFF → microservicio → frontend).
+     e. Para buscar strings literales, configs o contenido de archivos:
+        usar search_code(pattern="...", mode="compact") — ver search_strategy.md
    - Si `codebase_project` no esta disponible o el grafo no devuelve resultados
-     suficientes: cae al metodo anterior (Glob + lectura manual de imports).
+     suficientes: caer a search_strategy.md → FALLBACK (Glob + grep).
 4. Identifica funcionalidades existentes con riesgo de rotura (combina el resultado
    del paso 3 con tu propio analisis de la logica de negocio).
 
@@ -114,7 +116,8 @@ Si FLOW == DRY_RUN:
   codebase-memory-mcp_trace_path(mode="cross_service") para validar que el analisis
   cubre el flujo completo (Frontend→BFF→Backend).
 - SIEMPRE usar codebase-memory-mcp (si disponible) para codegen:
-  search_graph, get_code_snippet, trace_path — NO esperar a que el usuario lo pida.
+  search_graph, search_code, get_code_snippet, trace_path — NO esperar a que el usuario lo pida.
+  Ver search_strategy.md para el mapa completo de necesidades → tool.
 
 ============================================================
 ## HERRAMIENTAS DISPONIBLES

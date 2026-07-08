@@ -113,10 +113,13 @@ SI PRIMERA EJECUCION:
 PARA CADA ARCHIVO (dentro de su grupo):
   1. **Antes de codificar (codegen automático):**
      - Si `codebase_project` disponible:
-       - search_graph(project, query="<proposito del archivo>") para encontrar hermano
+       - search_code(project, pattern="<proposito del archivo>", mode="compact")
+         para encontrar archivos hermanos por contenido (no solo por nombre)
+       - search_graph(project, query="<entidad similar>") para encontrar funcion/clase
+         con proposito parecido
        - Si MODIFY: trace_path(direction="inbound", risk_labels=true) para callers
        - Si CROSS_REPO_CONNECTED=true: trace_path(mode="cross_service")
-     - Si no disponible: proceder con Read/Glob
+     - Si no disponible: proceder con search_strategy.md → FALLBACK (Read/Glob)
   2. Lanza task(orquestador-deep) para codificar ese archivo
      - Prompt: "Implementa [archivo] del plan. Sigue las instrucciones de coder_agent."
   3. Si el sub-deep reporta PROXIMO_ARCHIVO y RECUPERABLE=true:

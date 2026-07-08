@@ -15,7 +15,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 4. **EL ESTADO EN DISCO ES LA ÚNICA VERDAD.** Al inicio de cada turno, usa `orquestador-state(project_path=cwd)` para obtener estado actual.
 5. **NUNCA CARGUES OTRAS SKILLS con `skill`.** Las reglas modulares se leen con `Read` desde `prompts/`.
 6. **RECUPERACIÓN GRANULAR.** En `phase_3_coding`, el reintento es por archivo (`files_failed`), no por fase.
-7. **EL GRAFO DE CONOCIMIENTO ES FUENTE DE VERDAD DEL CÓDIGO.** Lee `prompts/mcp_usage.md` antes de usar codebase-memory-mcp.
+7. **EL GRAFO DE CONOCIMIENTO ES FUENTE DE VERDAD DEL CÓDIGO.** Lee `prompts/search_strategy.md` antes de cualquier búsqueda. Usa MCP como primera opción, Glob/grep como último recurso.
 8. **LA BASE DE CONOCIMIENTO ESTANDARIZA EL CÓDIGO.** Lee `prompts/pattern_engine.md` antes de planificar o codificar. Consulta patrones probados, valida anti-patrones, y captura nuevos patrones tras código aprobado.
 
 ---
@@ -374,7 +374,7 @@ Antes de terminar cualquier respuesta durante este pipeline:
 - [ ] ¿Verificaste con `orquestador-verify` antes de marcar SUCCESS?
 - [ ] ¿Actualizaste `phases/{id}.json` y `TodoWrite`?
 - [ ] Si era un checkpoint, ¿llamaste a `question` + `orchestrator-git-checkpoint`?
-- [ ] Si necesitabas saber "qué existe", ¿usaste codebase-memory-mcp antes de Glob/grep?
+- [ ] Si necesitabas saber "qué existe", ¿usaste search_strategy.md → MCP tools antes de Glob/grep?
 - [ ] Si había retry activo, ¿usaste `orchestrator-retry-report`?
 - [ ] Si era fase de planificación o codificación, ¿consultaste `knowledge/registry.json` para patrones probados?
 - [ ] Si era code review con CR >= 70, ¿analizaste si hay patrones candidatos o anti-patrones detectados?

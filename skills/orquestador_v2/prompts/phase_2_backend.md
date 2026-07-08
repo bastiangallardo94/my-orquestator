@@ -37,7 +37,7 @@ Si `codebase_project` (en .orquestador/_pointer.json) esta disponible:
    cuantos callers tiene — si son muchos (CRITICAL/HIGH), anota en el plan una nota
    de precaucion sobre breaking changes de firma.
 
-Si `codebase_project` no esta disponible, procede solo con lectura de archivos (Read/Glob) como referencia de convenciones.
+Si `codebase_project` no esta disponible, proceder con search_strategy.md → FALLBACK (Read/Glob).
 
 Lee el prompt completo de planificación backend desde su fuente oficial:
 
