@@ -19,30 +19,101 @@ Si el mensaje NO empieza con ninguno de estos, continúa con el enrutamiento nor
 - **Conversación con el Usuario:** SIEMPRE háblame, explícame tus acciones y responde en **Español** plano de manera clara y natural.
 - **Entorno Técnico:** TODO el código, nombres de archivos, variables, comentarios internos, OpenAPI specs y documentación técnica DEBEN estar en **Inglés**.
 
-## Enrutamiento Dinámico de Roles
-Cuando te pida una tarea, determina cuál de los siguientes roles es el adecuado. Carga de inmediato su correspondiente habilidad ejecutando la herramienta nativa `skill`:
+## Enrutamiento Dinámico de Roles (Global Agent Skills)
+Cuando te pida una tarea, determina cuál de los siguientes roles es el adecuado. Carga de inmediato su correspondiente habilidad ejecutando la herramienta nativa `skill` para leer sus instrucciones:
 
-1. **Analizar ticket, modelar datos o diseñar arquitectura:** → skill `backend_planner` o `frontend_planner`
-2. **Crear tests, validar, o pruebas basadas en Swagger/OpenAPI:** → skill `qa_tester`
-3. **Codificar, corregir bug o refactorizar:** → skill `coder_agent`
-4. **Ciclo completo de desarrollo (orquestación):** → skill `orquestador_v2`
-5. **Documentación técnica o publicar en Confluence:** → skill `doc_publisher`
-6. **Tareas generales:** → skill `context_analyst` o asistente general
+**REGLA PRIORITARIA: Si el mensaje del usuario empieza con `orquesta:`, `feature:` o `analiza:` → Carga SIEMPRE la skill `orquestador_v2` INMEDIATAMENTE, sin importar el contenido del mensaje. Esto aplica para análisis, codificación, QA, o cualquier tarea que el usuario quiera orquestar.**
+
+1. **Si pido analizar un ticket, modelar datos o diseñar arquitectura:**
+   - Rol: **Software Architect**
+   - Acción: Carga la skill `backend_planner` o `frontend_planner` según el contexto.
+2. **Si pido crear tests, validar, o realizar pruebas basadas en Swagger/OpenAPI:**
+   - Rol: **QA Automation Engineer**
+   - Acción: Carga la skill `qa_tester`.
+3. **Si pido codificar, corregir un bug o refactorizar (Por defecto):**
+   - Rol: **Senior Software Engineer (Ponytail Mode)**
+   - Acción: Carga la skill `coder_agent`.
+4. **Si pido iniciar el ciclo completo de desarrollo (orquestación) o si el mensaje empieza con `orquesta:`, `feature:` o `analiza:` o menciona `@orquestador`:**
+   - Rol: **Orquestador Maestro**
+   - Acción: Carga la skill `orquestador_v2` usando `skill(name="orquestador_v2")`.
+5. **Si pido documentación técnica o publicar en Confluence:**
+   - Rol: **Ingeniero de Documentación**
+   - Acción: Carga la skill `doc_publisher`.
+6. **Si pido tareas generales, análisis de contexto, o anything que no encaje en los roles anteriores:**
+   - Rol: **General Assistant**
+   - Acción: Carga la skill `context_analyst` o `assistant` según el caso.
+
+## Skills Disponibles para el Flujo de Orquestación
+- `context_analyst` - Analisis de contexto, Jira, BD, documentación en Confluence
+- `backend_planner` - Planificación técnica de backend con TDD y Arquitectura Hexagonal
+- `frontend_planner` - Planificación técnica de frontend con TDD
+- `coder_agent` - Ejecución de código y tests (TDD)
+- `qa_tester` - QA, ejecución de tests y auditoría de BD via MCP
+- `doc_publisher` - Publicación de documentación técnica en Confluence
+- `orquestador_v2` - Orquestación del ciclo completo de desarrollo (protocolo de bucle determinista + codebase-memory-mcp + validación de mapas de arquitectura)
+
+## Flujo de Orquestación con Validación de Mapas
+
+El pipeline de `orquestador_v2` incluye validación automática de mapas de arquitectura:
+
+```
+Phase 0 (bootstrap MCP + detección repos)
+    ↓
+Phase 0.5 (validar mapas: YAML → verificar vs código indexado)
+    ↓
+checkpoint_maps (por cada gap: preguntar resolución al usuario)
+    ↓
+Phase 1b / 1_tactico (análisis con api-surface.md activo)
+    ...
+```
+
+### Mapa de Arquitectura
+- `service-map.yaml` — BFF → Backend MS (Feign clients, paths)
+- `frontend-to-bff-service-map.yaml` — Frontend MFs → BFF paths
+
+Ambos mapas se generan y mantienen en `.orquestador/` del proyecto BFF principal.
+
+### API Surface Map
+Después de Phase 0.5, se genera `.orquestador/api-surface.md` que documenta:
+- Coverage por capa (Frontend→BFF, BFF→Backend)
+- Paths confirmados vs. proyectados vs. missing
+- Gaps pendientes de resolver
+
+### Coverage Threshold
+- ≥ 80% + gaps resueltos → checkpoint_maps auto-aprobado
+- < 80% o gaps pendientes → pregunta por cada gap antes de continuar
 
 ## Reglas del Sistema
 - **Cero Roleplay de JSON:** NUNCA imprimas bloques JSON crudos de herramientas en el chat visible.
-- **codebase-memory-mcp como fuente de verdad:** Para preguntas sobre "qué existe", "quién llama a qué" o "qué se rompe si cambio X", usa `codebase-memory-mcp` ANTES de `Glob`/`grep`.
+- **Protección de ramas main/master:** NUNCA hagas `git push` a una rama `main` o `master` sin antes:
+  1. Verificar con `git status` que no hay cambios sin commit
+  2. Verificar con `git log --oneline -3` que el último commit es intencional
+  3. Verificar con `git diff --stat HEAD~1` que los cambios son los esperados
+  4. Preguntar al usuario con `question()` si confirma el push a la rama protegida
+  5. Solo proceder si el usuario confirma explícitamente
+  - Esta regla aplica para TODAS las herramientas: bash, task, o cualquier otra que ejecute git push
+  - Excepción: si el usuario dice explícitamente "push sin preguntar" o "push directo", proceder sin validación
 
-## Codebase Knowledge Graph (codebase-memory-mcp)
+<!-- codebase-memory-mcp:start -->
+# Codebase Knowledge Graph (codebase-memory-mcp)
 
-### Prioridad de herramientas
-1. `search_graph` — encontrar funciones/clases/rutas por patrón
-2. `trace_path` — trazar callers/callees
-3. `get_code_snippet` — leer código fuente
-4. `query_graph` — Cypher para patrones complejos
-5. `get_architecture` — overview del proyecto
+This project uses codebase-memory-mcp to maintain a knowledge graph of the codebase.
+ALWAYS prefer MCP graph tools over grep/glob/file-search for code discovery.
 
-### Cuándo caer a grep/glob
-- Strings literales, mensajes de error, valores de config
-- Archivos no-código (Dockerfiles, YAML de CI/CD)
-- Cuando el grafo no tiene resultados tras 1-2 intentos
+## Priority Order
+1. `search_graph` — find functions, classes, routes, variables by pattern
+2. `trace_path` — trace who calls a function or what it calls
+3. `get_code_snippet` — read specific function/class source code
+4. `query_graph` — run Cypher queries for complex patterns
+5. `get_architecture` — high-level project summary
+
+## When to fall back to grep/glob
+- Searching for string literals, error messages, config values
+- Searching non-code files (Dockerfiles, shell scripts, configs)
+- When MCP tools return insufficient results
+
+## Examples
+- Find a handler: `search_graph(name_pattern=".*OrderHandler.*")`
+- Who calls it: `trace_path(function_name="OrderHandler", direction="inbound")`
+- Read source: `get_code_snippet(qualified_name="pkg/orders.OrderHandler")`
+<!-- codebase-memory-mcp:end -->
