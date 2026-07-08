@@ -40,9 +40,13 @@ Este módulo se lee UNA VEZ al inicio del pipeline. Ejecútalo cuando no exista 
 - Si no existe → continuar con bootstrap
 
 ### 1.4 Health check MCP
-- `codebase-memory-mcp_index_status(project="health-check")` con timeout 5s
+- Derivar project name desde `cwd`: `cwd.replace(/^\//, '').replace(/\//g, '-')`
+- `codebase-memory-mcp_list_projects()` → si el project name derivado está en la lista, usarlo
+- Si no está en la lista, intentar con el project name derivado (puede que no esté indexado aún)
+- `codebase-memory-mcp_index_status(project=<derived_project_name>)` con timeout 5s
 - Si responde → MCP vivo
-- Si timeout → `mcp_available: false`, continuar sin grafo
+- Si timeout o error de proyecto → intentar con `list_projects` para verificar otros proyectos, `mcp_available: true` (el MCP está vivo, solo el proyecto no está indexado)
+- Si `list_projects` también falla → `mcp_available: false`, continuar sin grafo
 
 ### 1.5 Inferencia de impacto
 - Si `codebase_project` disponible: `codebase-memory-mcp_get_architecture(project)` → languages, layers, packages
