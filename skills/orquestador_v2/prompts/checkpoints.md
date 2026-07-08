@@ -42,7 +42,7 @@ Un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de contenido en 
 |---|---|---|---|
 | checkpoint_maps | "¿Validamos los mapas de arquitectura?" | Ver detalles / Ignorar gaps | Auto-approve si coverage ≥ 80% |
 | checkpoint_1 | "¿La lógica de negocio y casos de uso son correctos?" | Aprobar / Rechazar / Ver detalle | No — BLINDAJE ACTIVO |
-| checkpoint_2 | "¿Apruebas el plan técnico para comenzar codificación?" | Aprobar / Rechazar / Ver plan | No — BLINDAJE ACTIVO |
+| checkpoint_2 | "¿Apruebas el plan técnico para comenzar codificación?" | Aprobar / Rechazar / Ver plan | Auto-approve si PIC == PASS y sin WARNs |
 | checkpoint_3 | Mostrar resumen real: archivos, tests, cobertura, compile, lint, CR. Luego: "¿Apruebas?" | Aprobar / Ver detalle CR / Rechazar | No |
 | checkpoint_4 | "¿Apruebas QA para pasar a documentación/reporte?" | Aprobar / Revisar fallidos / Known issues | No |
 | checkpoint_review | "¿Qué hago con los hallazgos del review?" | Ejecutar correcciones / Solo documentar / Descartar | Solo flujo REVIEW |
@@ -73,6 +73,18 @@ CODE REVIEW: {score}/100 ({status})
 [Ver detalle]  [Aprobar]  [Rechazar y relanzar]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+---
+
+## checkpoint_2 (especial - conditional auto-approve)
+
+Read phases/phase_2_7_pic_deps.json → pic_status
+Si pic_status == "PASS" Y no hay WARN en planes:
+  → Auto-APPROVE checkpoint_2 (saltar question())
+  → Escribir status=APPROVED, current_index++
+  → Informar: "✅ checkpoint_2 → Auto-APROBADO (PIC PASS, sin WARNs)"
+Si pic_status != "PASS" o hay WARN:
+  → Ejecutar protocolo normal con question()
 
 ---
 

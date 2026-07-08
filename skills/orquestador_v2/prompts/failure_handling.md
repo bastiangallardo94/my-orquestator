@@ -32,7 +32,7 @@ status == PARTIAL o FAILED:
   Si retries + 1 < max_retries:
     → Incrementar retries, guardar files_failed/error
     → NO avanzar (reintentar próximo turno)
-    → Si último retry y agente era "orquestador-deep": degradar a "orquestador-fast"
+    → Si retries >= 2 Y agente era "orquestador-deep": degradar a "orquestador-fast"
   Si retries + 1 >= max_retries:
     → Marcar SKIPPED, guardar files_skipped
     → Avanzar current_index (checkpoint siguiente pregunta al usuario)

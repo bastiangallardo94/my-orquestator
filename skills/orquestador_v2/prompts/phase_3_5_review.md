@@ -77,6 +77,29 @@ Si `codebase_project` == "NO_DISPONIBLE":
   - Evaluar por lectura de código (Glob/Read)
 
 ============================================================
+## 3.5. PATTERN ANALYSIS (nuevo)
+============================================================
+
+### Detección de Patrones Recurrentes
+Si hay 3+ archivos nuevos con estructura similar:
+1. Comparar: imports, hooks usados, manejo de estados, test patterns
+2. Si comparten >60% de estructura → es un patron candidato
+3. Generar ficha candidata en `/tmp/orquestador/pattern-candidate.md`
+4. Incluir en el reporte como "Patron Candidato"
+5. En checkpoint_3, preguntar al usuario si guardar como patron
+
+### Validación contra Patrones Existentes
+1. Leer `~/.config/opencode/knowledge/registry.json`
+2. Para cada archivo nuevo:
+   - Buscar patron matching por category + stack
+   - Si existe patron y el codigo se desvia → WARN con razon
+   - Si existe anti-patron y el codigo lo usa → FAIL
+3. Incluir en code-review-report.md:
+   - Patrones encontrados: [lista]
+   - Desviaciones: [lista con severidad]
+   - Anti-patrones detectados: [lista]
+
+============================================================
 ## 4. GENERAR REPORTE
 ============================================================
 

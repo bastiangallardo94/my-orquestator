@@ -55,10 +55,21 @@ Si el proyecto parece multi-repo (`turbo.json`, `nx.json`, `packages/*/package.j
 - Buscar mapas: `~/.config/opencode/maps/` → `.orquestador/`
 
 ### 1.7 Detección de herramientas MCP
-`list_mcp_resources()` → detectar:
+`list_mcp_resources()` → detectar (ver `prompts/mcp_capabilities.md` para detección semántica):
 - "database"/"db"/"postgres"/"mysql" → `bd_mcp: true`
 - "backend-api-qa" → `rest_tester: true`
 - "codebase_memory" → `codegen: true`
+
+### 1.8 Detección de Knowledge Base
+- `Glob ~/.config/opencode/knowledge/registry.json`
+  - Si existe → `knowledge_available: true`, leer patrones disponibles
+  - Si no existe → `knowledge_available: false`, crear estructura básica:
+    ```
+    mkdir -p ~/.config/opencode/knowledge/{patterns,anti-patterns,templates}
+    Write ~/.config/opencode/knowledge/registry.json con estructura vacia
+    ```
+- Si hay patrones con `confidence < 0.5` → marcar como "experimentales"
+- Guardar `knowledge_available` en `_pointer.json`
 
 ---
 

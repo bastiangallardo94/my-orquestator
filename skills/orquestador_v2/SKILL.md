@@ -16,6 +16,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 5. **NUNCA CARGUES OTRAS SKILLS con `skill`.** Las reglas modulares se leen con `Read` desde `prompts/`.
 6. **RECUPERACIÓN GRANULAR.** En `phase_3_coding`, el reintento es por archivo (`files_failed`), no por fase.
 7. **EL GRAFO DE CONOCIMIENTO ES FUENTE DE VERDAD DEL CÓDIGO.** Lee `prompts/mcp_usage.md` antes de usar codebase-memory-mcp.
+8. **LA BASE DE CONOCIMIENTO ESTANDARIZA EL CÓDIGO.** Lee `prompts/pattern_engine.md` antes de planificar o codificar. Consulta patrones probados, valida anti-patrones, y captura nuevos patrones tras código aprobado.
 
 ---
 
@@ -26,7 +27,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 ├── _pointer.json         # Puntero global: flow, impact, phase_order, current_index
 ├── summary.md            # Checklist legible, regenerado tras cada fase
 ├── context.md            # Contexto compacto del pipeline (persistente, ~50 líneas)
-├── dependency-groups.json # Grupos de paralelización (generado por phase_2_8)
+├── dependency-groups.json # Grupos de paralelización (generado por phase_2_7_pic_deps)
 ├── api-surface.md        # API Surface Map (generado por phase_0_5)
 ├── phases/
 │   └── <phase_id>.json   # Un archivo por fase
@@ -91,8 +92,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 | 4 | phase_2_frontend | ✅* | ✅* | ❌ | ✅* | ❌ | ❌ | ✅* | agent | deep |
 | 5 | phase_2_5_playwright | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
 | 6 | checkpoint_2 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | checkpoint | — |
-| 7 | phase_2_7_pic | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
-| 8 | phase_2_8_dependency_analysis | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
+| 7 | phase_2_7_pic_deps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
 | 9 | phase_3_coding | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | agent | fast |
 | 10 | phase_3_5_review | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | agent | fast |
 | 11 | checkpoint_3 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | checkpoint | — |
@@ -316,6 +316,36 @@ Regla dura: un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de c
 
 ---
 
+## Motor de Patrones de Conocimiento
+
+**Lee `prompts/pattern_engine.md`** para las instrucciones completas del motor de patrones.
+
+### Consulta (antes de cada fase de codificación)
+Antes de phase_2_frontend, phase_2_backend y phase_3_coding:
+1. `Read ~/.config/opencode/knowledge/registry.json` → indice de patrones
+2. Buscar patrones relevantes por category + stack
+3. Si hay match → inyectar ficha completa en el prompt del subagente
+4. Si no hay match → usar planner_front.md / backend_planner como base
+
+### Captura (después de código aprobado)
+En phase_3_5_review, si el código fue aprobado (CR >= 70):
+1. Analizar archivos creados/modificados
+2. Si 3+ archivos comparten estructura similar:
+   a. Extraer patrón común
+   b. Generar ficha en knowledge/patterns/
+   c. Actualizar registry.json con confidence++
+3. Si el código usa un patrón existente:
+   a. Incrementar usage_count
+   b. Actualizar last_used
+
+### Validación (en code review)
+En phase_3_5_review:
+1. Para cada archivo nuevo, comparar con patrones del registry
+2. Si se desvía del patrón sin razón → WARN
+3. Si usa anti-patrón conocido → FAIL
+
+---
+
 ## Custom Tools Disponibles (orquestador-plugin.mjs)
 
 | Tool | Cuándo usarla | Output |
@@ -346,3 +376,5 @@ Antes de terminar cualquier respuesta durante este pipeline:
 - [ ] Si era un checkpoint, ¿llamaste a `question` + `orchestrator-git-checkpoint`?
 - [ ] Si necesitabas saber "qué existe", ¿usaste codebase-memory-mcp antes de Glob/grep?
 - [ ] Si había retry activo, ¿usaste `orchestrator-retry-report`?
+- [ ] Si era fase de planificación o codificación, ¿consultaste `knowledge/registry.json` para patrones probados?
+- [ ] Si era code review con CR >= 70, ¿analizaste si hay patrones candidatos o anti-patrones detectados?

@@ -12,6 +12,15 @@ max_retries: 3
 
 # Phase 2 BACKEND — Planificación Técnica
 
+## Consulta de Patrones Probados (antes de escribir el plan)
+1. `Read ~/.config/opencode/knowledge/registry.json` → buscar patrones backend
+2. Para cada patron relevante (por stack y category):
+   - `Read ~/.config/opencode/knowledge/{patron.file}`
+   - Inyectar como referencia en el plan
+3. Si hay template relevante (ej: feature-crud-go):
+   - `Read ~/.config/opencode/knowledge/{template.file}`
+   - Usar como base del plan en vez de generar desde cero
+
 ## Descubrimiento de Convenciones (codebase-memory-mcp, antes de escribir el plan)
 Si `codebase_project` (en .orquestador/_pointer.json) esta disponible:
 1. `codebase-memory-mcp_search_graph(project, query="<caso de uso/handler similar al

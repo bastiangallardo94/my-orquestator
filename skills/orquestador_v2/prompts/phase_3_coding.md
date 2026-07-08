@@ -29,11 +29,25 @@ Si tu prompt incluye un bloque "MODO RETRY (intento N/3)" al inicio:
 ============================================================
 ## INSTRUCCIONES DE CODIFICACION
 ============================================================
-LEE estos archivos del skill coder_agent (NO los recibes inline, léelos):
+LEE estos archivos del skill coder_agent (NO los recibes inline, leelos):
 1. Read ~/.config/opencode/skills/coder_agent/prompts/coder_general.md
 2. Si BACKEND o FULLSTACK: Read ~/.config/opencode/skills/coder_agent/prompts/coder_backend.md
 3. Si FRONTEND o FULLSTACK: Read ~/.config/opencode/skills/coder_agent/prompts/coder_frontend.md
 4. Read ~/.config/opencode/skills/coder_agent/prompts/output_format.md
+
+============================================================
+## PATRONES PROBADOS (consultar antes de codificar)
+============================================================
+1. Read ~/.config/opencode/knowledge/registry.json
+2. Para cada patron relevante al stack y category del archivo:
+   - Read ~/.config/opencode/knowledge/{patron.file}
+   - Inyectar como "[PATRON PROBADO]" en el prompt del subagente
+3. Para cada anti-patron relevante:
+   - Read ~/.config/opencode/knowledge/{anti-patron.file}
+   - Inyectar como "[ANTI-PATRON - EVITAR]" en el prompt
+4. Si hay template relevante (ej: feature-crud-react):
+   - Read ~/.config/opencode/knowledge/{template.file}
+   - Usar como base para la implementacion
 
 Aplica TODAS las reglas de esos archivos.
 

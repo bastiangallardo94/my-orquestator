@@ -12,6 +12,15 @@ max_retries: 3
 
 {contenido_inyectado_desde_planner_front.md}
 
+## Consulta de Patrones Probados (antes de escribir el plan)
+1. `Read ~/.config/opencode/knowledge/registry.json` → buscar patrones frontend
+2. Para cada patron relevante (por stack y category):
+   - `Read ~/.config/opencode/knowledge/{patron.file}`
+   - Inyectar como referencia en el plan
+3. Si el plan propone un enfoque que contradice un patron probado:
+   - Documentar por que se desvia
+   - Marcar como "desviacion deliberada" en el plan
+
 ## Descubrimiento de Convenciones (codebase-memory-mcp, antes de escribir el plan)
 Si `codebase_project` (en .orquestador/_pointer.json) esta disponible:
 1. `codebase-memory-mcp_search_graph(project, query="<feature/hook/componente similar

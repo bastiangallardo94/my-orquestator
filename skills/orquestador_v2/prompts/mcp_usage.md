@@ -53,7 +53,24 @@ Cuando codebase-memory-mcp no detecta arcos cross-repo automáticamente:
 
 - **Bootstrap:** una vez en Phase 0. Si ya indexado → usar directo. Si no → indexar automáticamente.
 - **Re-indexado post-codificación:** después de phase_3_coding SUCCESS, antes de phase_3_5_review. Automático (sin preguntar). Si falla → continuar sin grafo.
+  - **Optimizado:** NO hacer `mode="full"` post-coding. Usar:
+    - Si < 20 archivos cambiados → `mode="fast"` (solo re-indexa archivos cambiados)
+    - Si >= 20 archivos cambiados → `mode="moderate"`
+    - Nunca `mode="full"` post-coding (solo en Phase 0 bootstrap)
+  - Detectar archivos cambiados: `git diff --name-only HEAD~1`
 - Si falla → `codebase_project: "NO_DISPONIBLE"` para el resto de la corrida.
+
+---
+
+## Cross-repo intelligence (autodetección)
+
+Si el proyecto tiene `turbo.json`, `nx.json`, o `packages/*/package.json`:
+1. Listar sub-directorios con `go.mod` o `package.json`
+2. Indexar cada uno como proyecto separado
+3. Ejecutar `index_repository(mode="cross-repo-intelligence", target_projects=["*"])`
+4. Guardar resultados en `.orquestador/service-map.yaml`
+
+Esto permite trace_path cross-service sin mapas manuales.
 
 ---
 
