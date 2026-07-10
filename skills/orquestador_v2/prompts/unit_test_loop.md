@@ -215,10 +215,13 @@ si coverage_actual < TARGET:
     → volver a phase_ut_1
     → mensaje: "Coverage: {coverage_actual}% (aumento +{aumento}%). Continuando loop..."
 
-  si aumento < 8:
-    → status = STOPPED
-    → Informar: "Coverage: {coverage_actual}%. Aumento: +{aumento}% (threshold: 8%). Target: {TARGET}%"
-    → No question() en este flujo — solo informar y avanzar a phase_ut_report
+      si aumento < 8:
+        → status = STOPPED
+        → question() según lógica en checkpoints.md:
+            "Coverage: {coverage_actual}%. Aumento: +{aumento}% (threshold: 8%). Target: {TARGET}%. ¿Qué hacemos?"
+            - "Reducir target a {coverage_actual}% y continuar"
+            - "Continuar sin threshold de aumento"
+            - "Detener y ver plan ejecutado"
 ```
 
 ---
