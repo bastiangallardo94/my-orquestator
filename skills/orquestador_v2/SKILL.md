@@ -50,6 +50,13 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
   "codebase_project": "Users-bgallardoc-proyecto | NO_DISPONIBLE",
   "mcp_available": true,
   "tools_detected": { "bd_mcp": {}, "rest_tester": {}, "codegen": {} },
+  "worktree": {
+    "name": "feature-login | null",
+    "path": "/path/a/worktrees/feature-login | null",
+    "branch": "feature/login | null",
+    "is_worktree": false,
+    "parent_repo": "/path/al/repo | null"
+  },
   "created_at": "ISO8601"
 }
 ```
@@ -113,8 +120,14 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 | U4 | phase_ut_3 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | agent | fast |
 | U5 | checkpoint_unit_test_loop | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | checkpoint | — |
 | U6 | phase_ut_report | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | report | — |
+| WT1 | phase_wt_create | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | agent | fast |
+| WT2 | phase_wt_bootstrap | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | agent | fast |
+| WT3 | phase_wt_list | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | report | — |
+| WT4 | phase_wt_remove | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | agent | fast |
 
 `*` Solo si `impact=FULLSTACK` (se lanzan en paralelo).
+
+**WORKTREE flows** son standalone y no siguen el pipeline normal de fases.
 
 **TEST (Validación funcional):** Las fases marcadas con ✅ en la columna TEST son **OBLIGATORIAS** para validar flujos.phase_3_5_review y phase_bugfix_revalidate ejecutan validación SEGÚN `impact`:
 - **FRONTEND** → Playwright E2E
@@ -155,6 +168,46 @@ Flow = UNIT_TEST. Sin Jira. Loop hasta coverage target (default 90%). Parametriz
 
 ### 10. Jira ID (`PROJ-123`)
 Flow = COMPLETO. Equivalente a `orquesta:` con Jira detectado.
+
+### 11. `worktree:feature <nombre>` — Feature en Worktree
+**Usa plugin `orquestador-worktree.mjs`**. Flujo completo en worktree:
+1. Crea branch `feature/<nombre>` + worktree `worktrees/<nombre>/`
+2. Copia archivos compartidos desde repo principal
+3. Inicializa pipeline TACTICO en el worktree
+4. Informa cómo continuar (`cd worktrees/<nombre> && opencode orchestrate`)
+
+### 12. `worktree:fix <nombre>` — Bug Fix en Worktree
+Igual que `worktree:feature` pero con branch `bugfix/<nombre>` y flow TACTICO + change_type="bug_fix".
+
+### 13. `worktree:orchestrate <nombre>` — Worktree + Bootstrap
+1. Si el worktree no existe → crear con branch `feature/<nombre>`
+2. Si ya existe → usar existente
+3. Copiar archivos compartidos
+4. Iniciar phase_1_analyze en el worktree
+
+### 14. `worktree:list` — Dashboard Multi-Worktree
+**Usa plugin `orquestador-worktree.mjs dashboard`**. Muestra tabla con:
+- Todos los worktrees del repo
+- Rama, flow, fase actual, status
+- Alertas de worktrees huerfanos o desactualizados
+
+### 15. `worktree:goto <nombre>` — Cambiar a Worktree
+Retorna el path absoluto para `cd`:
+```
+cd worktrees/<nombre>
+```
+
+### 16. `worktree:remove <nombre>` — Eliminar Worktree
+**Usa plugin `orquestador-worktree.mjs remove`**. Elimina worktree:
+- Si pipeline activo → warning con question()
+- Si hay cambios sin commit → offer to commit o force
+- Si pipeline completo/fallido → eliminación directa
+
+### 17. `worktree:prune` — Limpiar Huérfanos
+`git worktree prune --dry-run` → confirmar → ejecutar.
+
+### 18. `worktree:sync [nombre]` — Sincronizar Archivos Compartidos
+Copia archivos compartidos (`api-surface.md`, `dependency-groups.json`, `config-map.yaml`) del repo principal a los worktrees. Si `nombre` especificado → solo a ese worktree.
 
 ### Fallback (sin trigger)
 Phase 0 completa normal.
@@ -240,8 +293,14 @@ Tras cada paso: `Write phases/{id}.json`, regenerar `summary.md`, actualizar `co
    - Si phase_3_coding/phase_3_5_review/phase_4_qa: antepone "Lee .orquestador/context.md"
 
 4. task(subagent_type=resolve_agent(PHASE.agent), description="...", prompt=ensamblado)
-   - Si `deep_model == "AGENTE_ACTUAL"` y `PHASE.agent == "orquestador-deep"` → usar `task(subagent_type="general")` (hereda el agente actual)
+   - Si `deep_model == "AGENTE_ACTUAL"` y `PHASE.agent == "orquestador-deep"` → usar `task(subagent_type="orquestador-deep")` (hereda el agente actual - usa deep directamente)
+   - Si `deep_model == "AGENTE_ACTUAL"` y `PHASE.agent == "orquestador-fast"` → usar `task(subagent_type="orquestador-fast")` (hereda el agente actual - usa fast directamente)
    - En cualquier otro caso → usar `PHASE.agent` tal cual
+
+**Nota:** `resolve_agent(agent)` mapea el nombre del agente al `subagent_type` válido:
+   - `orquestador-deep` → `"orquestador-deep"`
+   - `orquestador-fast` → `"orquestador-fast"`
+   - other values → `"orquestador-fast"` (fallback por defecto a fast)
 
 5. EXIT CHECK:
    orquestador-verify(phase_id=PHASE.id, exit_files=PHASE.exit_files, project_path=cwd)
@@ -327,6 +386,46 @@ Regla dura: un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de c
 
 ---
 
+## Git Worktree Support — Múltiples Instancias en Paralelo
+
+**Lee `prompts/worktree_management.md`** para el protocolo completo de gestión de worktrees.
+
+### Concepto
+Git Worktrees permiten correr múltiples pipelines del orquestador en paralelo en diferentes ramas, cada uno con su propio `.orquestador/` aislado.
+
+```
+<repo>/
+├── worktrees/feature-login/.orquestador/  # Pipeline A
+├── worktrees/feature-checkout/.orquestador/ # Pipeline B
+└── main (repo principal)/.orquestador/     # Pipeline principal
+```
+
+### Entry Points para Worktree
+
+| Trigger | Descripción |
+|---------|-------------|
+| `worktree:create <nombre> [rama]` | Crear worktree + rama + iniciar pipeline |
+| `worktree:list` | Listar todos los worktrees con estado de pipeline |
+| `worktree:remove <nombre>` | Eliminar worktree (con confirmación) |
+| `worktree:prune` | Limpiar worktrees huérfanos |
+| `wt:new <nombre>` | Alias corto para create |
+
+### Detección Automática
+En `phase_0_bootstrap.md`, el pipeline detecta si está corriendo dentro de un worktree y muestra esa info en checkpoints:
+
+```
+📍 Worktree: feature-login | Rama: feature/login
+```
+
+### Estados de Pipeline por Worktree
+- **ACTIVE**: Pipeline en ejecución
+- **PAUSED**: Pausado en checkpoint
+- **COMPLETE**: Finalizado
+- **FAILED**: Falló
+- **ORPHANED**: Sin pipeline
+
+---
+
 ## Motor de Patrones de Conocimiento
 
 **Lee `prompts/pattern_engine.md`** para las instrucciones completas del motor de patrones.
@@ -374,6 +473,14 @@ En phase_3_5_review:
 | `orchestrator-phase-template` | Crear `phases/<id>.json` desde frontmatter | JSON poblado |
 | `orchestrator-cleanup` | Phase 6 — archivar pipeline a history/ | archivos archivados |
 | `orchestrator-git-checkpoint` | Post-checkpoint HITL — marcar en git | tag/commit |
+| **Worktree Tools (orquestador-worktree.mjs)** |
+| `worktreeList(repoPath)` | worktree:list — listar todos los worktrees | WorktreeStatus[] |
+| `worktreeInfo(path)` | worktree:goto — metadata del worktree actual | WorktreeInfo |
+| `worktreeCreate(options)` | worktree:feature/fix — crear WT + branch | CreateResult |
+| `worktreeSwitch(name, repoPath)` | worktree:goto — retorna path absoluto | string |
+| `worktreeRemove(options)` | worktree:remove — eliminar WT con validaciones | RemoveResult |
+| `worktreeDashboard(repoPath)` | worktree:list — tabla formateada inline | string (markdown) |
+| `worktreeSync(options)` | worktree:sync — copiar shared files a WTs | SyncResult |
 
 ---
 
@@ -389,3 +496,4 @@ Antes de terminar cualquier respuesta durante este pipeline:
 - [ ] Si había retry activo, ¿usaste `orchestrator-retry-report`?
 - [ ] Si era fase de planificación o codificación, ¿consultaste `knowledge/registry.json` para patrones probados?
 - [ ] Si era code review con CR >= 70, ¿analizaste si hay patrones candidatos o anti-patrones detectados?
+- [ ] Si estaba en un worktree, ¿mostraste `📍 Worktree: {nombre} | Rama: {rama}` en checkpoints?
