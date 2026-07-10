@@ -49,6 +49,7 @@ Un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de contenido en 
 | checkpoint_test | "¿Qué hago con los tests?" | Ejecutar tests generados / Solo documentar gaps / Descartar | Solo flujo TEST |
 | checkpoint_bugfix_analyze | Mostrar docs/bugfix-analysis.md. "¿La hipótesis de causa raíz es correcta?" | Sí, continuar / Buscar en otro lado / Cerrar | Solo flujo BUGFIX |
 | checkpoint_bugfix | Mostrar docs/bugfix-results.md. "¿El fix resolvió el bug?" | Aprobar / Iterar fix / Descartar | Solo flujo BUGFIX |
+| checkpoint_unit_test_loop | Mostrar coverage-history.md. Evaluar: coverage >= target? aumento >= 8%? | Ver plan ejecutado / Continuar sin threshold / Detener | Solo flujo UNIT_TEST |
 
 ---
 
@@ -177,4 +178,73 @@ question(
     "Descartar — revertir cambios"
   ]
 )
+```
+
+---
+
+## checkpoint_unit_test_loop (flujo UNIT_TEST)
+
+Este checkpoint implementa la lógica de loop para coverage incremental.
+
+```
+1. Leer .orquestador/coverage-history.md
+2. Leer phases/phase_ut_N.json de la última iteración
+3. Extraer:
+   - coverage_actual = última iteración.coverage
+   - coverage_anterior = iteración - 1 (si existe)
+   - target = _pointer.target (default 90%)
+   - iteracion_actual =última.iteracion
+   - tests_generados_esta_iteracion
+
+4. Decisión:
+   si coverage_actual >= target:
+     → status = APPROVED
+     → avance = current_index++
+     → mensaje: "TARGET ALCANZADO: {coverage_actual}% >= {target}%"
+
+   si coverage_actual < target:
+     aumento = coverage_actual - coverage_anterior (solo si iteracion > 1)
+
+     si iteracion == 1:
+       → status = APPROVED
+       → volver a phase_ut_1 (loop sin comparación de aumento)
+       → mensaje: "Iteración 1 completada. Coverage: {coverage_actual}%. Continuando..."
+
+     si aumento >= 8:
+       → status = APPROVED
+       → volver a phase_ut_1 (loop)
+       → mensaje: "Coverage: {coverage_actual}% (aumento +{aumento}%). Continuando..."
+
+     si aumento < 8:
+       → status = STOPPED
+       → question(
+           question: "Coverage: {coverage_actual}%. Aumento: +{aumento}% (threshold: 8%). Target: {target}%. ¿Qué hacemos?",
+           header: "Unit Test Loop",
+           options: [
+             "Reducir target a {coverage_actual}% y continuar",
+             "Continuar sin threshold de aumento",
+             "Detener y ver plan ejecutado"
+           ]
+         )
+         - "Reducir target" → _pointer.target = coverage_actual, volver a phase_ut_1
+         - "Continuar sin threshold" → volver a phase_ut_1
+         - "Detener" → status = STOPPED, avanzar a phase_ut_report
+```
+
+**Generación de coverage-history.md (si no existe):**
+
+```markdown
+# Unit Test Coverage History
+
+TARGET: {target}%
+
+| Iteración | Coverage | Aumento | Tests Generados | Status |
+|-----------|----------|---------|----------------|--------|
+| 1         | {X}%     | —       | {N}            | OK     |
+```
+
+**Actualización de coverage-history.md (por cada iteración):**
+
+```markdown
+| {iter}   | {cov}%   | {+/-(aumento)} | {N}            | {OK/STOPPED} |
 ```

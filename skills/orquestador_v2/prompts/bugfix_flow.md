@@ -73,6 +73,41 @@ Commit: {checkpoint_hash}
 4. Consultar el grafo si `codebase-memory-mcp` disponible:
    - `trace_path()` sobre las funciones modificadas
    - ¿Hay paths que rompan con el bug reportado?
+
+## 4.1 Búsqueda de patrones de bug (search_graph)
+
+Si `codebase_project` disponible:
+1. Analizar el bug reportado → extraer palabras clave
+2. `codebase-memory-mcp_search_graph(project, query="<palabras clave del bug>")`
+   - Buscar funciones con nombres/descripciones similares al bug
+   - Especialmente funciones marcadas como CRITICAL/HIGH en risk_labels
+3. Para funciones encontradas:
+   `codebase-memory-mcp_trace_path(project, function_name=<func>,
+        direction="inbound", depth=2, risk_labels=true)`
+   → Identificar si alguno de los callers es la fuente del bug
+
+## 4.2 Métricas pre-fix (query_graph)
+
+Si `codebase_project` disponible:
+1. Para las funciones modificadas desde el checkpoint:
+   `codebase-memory-mcp_query_graph(project, query="
+     MATCH (f) WHERE f.qualified_name IN [<funciones modificadas>]
+     RETURN f.qualified_name, f.complexity, f.cognitive,
+            f.loop_depth, f.transitive_loop_depth")`
+2. Guardar como "Métricas pre-fix" en docs/bugfix-analysis.md
+   → Permite comparar post-fix y detectar si el cambio agregó complejidad
+
+## 4.3 Comparar diff real con checkpoint (detect_changes)
+
+Si `codebase_project` disponible:
+1. `codebase-memory-mcp_detect_changes(project, base_branch=<checkpoint_name>)`
+2. El diff del grafo muestra:
+   - Funciones realmente cambiadas (no solo archivos)
+   - Blast radius: qué funciones llaman a las cambiadas
+3. Comparar con la hipótesis del paso 3:
+   - Si el diff del grafo incluye funciones NO consideradas → actualizar hipótesis
+   - Si el diff del grafo NO incluye funciones consideradas → posible false positive
+
 5. Generar `docs/bugfix-analysis.md` con:
 
 ## Template de docs/bugfix-analysis.md
@@ -90,6 +125,15 @@ Commit: {checkpoint_hash}
 ## Evidencia
 - {Archivo 1}: {línea/función específica} → {por qué lo hace fallar}
 - {Archivo 2}: ...
+
+## Métricas pre-fix (codebase-memory-mcp)
+| Función | Complejidad | Cognitive | Loop Depth | Transitive Loop |
+|---------|-------------|-----------|------------|-----------------|
+| [name] | [N] | [N] | [N] | [N] |
+
+## Blast Radius (detect_changes)
+- Funciones que cambiaron: [lista]
+- Callers afectados: [lista por severidad CRITICAL/HIGH/MEDIUM/LOW]
 
 ## Archivos que requieren fix
 {Lista exacta de archivos a modificar}

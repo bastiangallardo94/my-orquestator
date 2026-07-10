@@ -101,6 +101,32 @@ Si hay 3+ archivos nuevos con estructura similar:
    - Desviaciones: [lista con severidad]
    - Anti-patrones detectados: [lista]
 
+## 3.6 Impacto Planificado vs Real (detect_changes)
+
+Si `codebase_project` disponible:
+1. Detectar la rama base:
+   - `git symbolic-ref refs/remotes/origin/HEAD` o
+   - Leer `AGENTS.md` para `base_branch` o
+   - Fallback: "main"
+2. `codebase-memory-mcp_detect_changes(project, base_branch=<rama base>)`
+3. Extraer del diff:
+   - Archivos realmente modificados
+   - Funciones cambiadas (blast radius)
+4. Leer docs/CHANGELOG_LOGICO.md → ARCHIVOS_MODIFICAR y ARCHIVOS_AFECTADOS del plan
+5. Comparar:
+   - Archivos en el plan pero NO en el diff real → "Sobre-estimación en plan"
+   - Archivos en el diff real pero NO en el plan → "Impacto no anticipado"
+6. Incluir en code-review-report.md sección "Impacto Planificado vs Real"
+
+## 3.7 Score ajuste por impacto no anticipado
+
+Si hay impacto no anticipado:
+- CR_SCORE -= 10 puntos por archivo no planificado
+- CR_STATUS recalculado con el nuevo score:
+  - >= 70 → PASS
+  - 50-69 → WARN
+  - < 50 → FAIL
+
 ============================================================
 ## 4. GENERAR REPORTE
 ============================================================
@@ -120,8 +146,16 @@ Escribir docs/code-review-report.md:
 - Error: [detalle o "N/A"]
 
 ## Code Review (Grafo)
-- Score: [0-100] (25% complejidad, 25% duplicación, 25% cobertura, 25% arquitectura)
+- Score: [0-100] (20% complejidad, 20% duplicación, 20% cobertura, 20% arquitectura, 20% scope)
 - Status: [PASS (>=70) | WARN (50-69) | FAIL (<50)]
+- Score Ajustado: [N] (por impacto no anticipado)
+
+### Impacto Planificado vs Real
+- Base branch: [rama]
+- Impacto planificado: [lista del plan]
+- Impacto real detectado: [lista del diff]
+- ⚠️ Impacto no anticipado: [lista o "ninguno"]
+- ⚠️ Sobre-estimación: [lista o "ninguno"]
 
 ### Complejidad
 | Función | Complejidad | Cognitive | Status |

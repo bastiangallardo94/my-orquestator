@@ -82,31 +82,37 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 
 ## Tabla Maestra de Fases por Flujo
 
-| # | phase_id | COMPLETO | TACTICO | DRY_RUN | FIX | REVIEW | TEST | REFACTOR | type | agent |
-|---|----------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---|---|
-| 0.5 | phase_0_5_validate_maps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | agent | deep |
-| 0.6 | checkpoint_maps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | checkpoint | — |
-| 1 | phase_1_analyze | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | agent | deep |
-| 2 | checkpoint_1 | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | checkpoint | — |
-| 3 | phase_2_backend | ✅* | ✅* | ❌ | ✅* | ❌ | ❌ | ✅* | agent | deep |
-| 4 | phase_2_frontend | ✅* | ✅* | ❌ | ✅* | ❌ | ❌ | ✅* | agent | deep |
-| 5 | phase_2_5_playwright | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
-| 6 | checkpoint_2 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | checkpoint | — |
-| 7 | phase_2_7_pic_deps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
-| 9 | phase_3_coding | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | agent | fast |
-| 10 | phase_3_5_review | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | agent | fast |
-| 11 | checkpoint_3 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | checkpoint | — |
-| 12 | phase_4_qa | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | agent | fast |
-| 13 | checkpoint_4 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
-| 14 | phase_5_docs | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | agent | fast |
-| 15 | phase_6_report | ✅ | ✅ | ✅ | ✅ | inline | inline | ✅ | report | — |
-| 16 | checkpoint_review | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | checkpoint | — |
-| 17 | checkpoint_test | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
-| B1 | phase_bugfix_analyze | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | deep |
-| B2 | checkpoint_bugfix_analyze | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
-| B3 | phase_bugfix_fix | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | agent | fast |
-| B4 | phase_bugfix_revalidate | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | agent | fast |
-| B5 | checkpoint_bugfix | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
+| # | phase_id | COMPLETO | TACTICO | DRY_RUN | FIX | REVIEW | TEST | REFACTOR | UNIT_TEST | type | agent |
+|---|----------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---|---|
+| 0.5 | phase_0_5_validate_maps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | deep |
+| 0.6 | checkpoint_maps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
+| 1 | phase_1_analyze | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | deep |
+| 2 | checkpoint_1 | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
+| 3 | phase_2_backend | ✅* | ✅* | ❌ | ✅* | ❌ | ❌ | ✅* | ❌ | agent | deep |
+| 4 | phase_2_frontend | ✅* | ✅* | ❌ | ✅* | ❌ | ❌ | ✅* | ❌ | agent | deep |
+| 5 | phase_2_5_playwright | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | fast |
+| 6 | checkpoint_2 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
+| 7 | phase_2_7_pic_deps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | fast |
+| 9 | phase_3_coding | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | fast |
+| 10 | phase_3_5_review | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ | agent | fast |
+| 11 | checkpoint_3 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
+| 12 | phase_4_qa | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | agent | fast |
+| 13 | checkpoint_4 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | checkpoint | — |
+| 14 | phase_5_docs | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | agent | fast |
+| 15 | phase_6_report | ✅ | ✅ | ✅ | ✅ | inline | inline | ✅ | inline | report | — |
+| 16 | checkpoint_review | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
+| 17 | checkpoint_test | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | checkpoint | — |
+| B1 | phase_bugfix_analyze | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | deep |
+| B2 | checkpoint_bugfix_analyze | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | checkpoint | — |
+| B3 | phase_bugfix_fix | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | fast |
+| B4 | phase_bugfix_revalidate | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | agent | fast |
+| B5 | checkpoint_bugfix | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | checkpoint | — |
+| U1 | phase_ut_1 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | agent | fast |
+| U2 | checkpoint_ut_coverage | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | checkpoint | — |
+| U3 | phase_ut_2 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | agent | fast |
+| U4 | phase_ut_3 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | agent | fast |
+| U5 | checkpoint_unit_test_loop | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | checkpoint | — |
+| U6 | phase_ut_report | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | report | — |
 
 `*` Solo si `impact=FULLSTACK` (se lanzan en paralelo).
 
@@ -117,7 +123,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 
 ---
 
-## Invocation Entry Points (8 Triggers)
+## Invocation Entry Points (9 Triggers)
 
 ### 1. `orquesta:` — Flujo Completo
 Flow = COMPLETO (con Jira) o TÁCTICO (sin Jira). Pregunta change_type.
@@ -144,7 +150,10 @@ Flow = REFACTOR, change_type = "refactor". Sin phase_4_qa (validación es code r
 Flow = BUGFIX_TACTICO. El pipeline anterior fue SUCCESS pero lo desplegado provocó un bug. Usa el último checkpoint git como contexto para análisis de causa raíz + fix mínimo.
 **Lee `prompts/bugfix_flow.md`** para el flujo completo (phases B1-B5).
 
-### 9. Jira ID (`PROJ-123`)
+### 9. `unit-test:` — Unit Test Coverage Loop
+Flow = UNIT_TEST. Sin Jira. Loop hasta coverage target (default 90%). Parametrizable: `unit-test 85` para override. Lee `prompts/unit_test_loop.md`. Sin HITL durante el loop — solo cuando aumento < 8%.
+
+### 10. Jira ID (`PROJ-123`)
 Flow = COMPLETO. Equivalente a `orquesta:` con Jira detectado.
 
 ### Fallback (sin trigger)

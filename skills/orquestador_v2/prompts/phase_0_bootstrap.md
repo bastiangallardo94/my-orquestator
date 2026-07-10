@@ -15,8 +15,25 @@ Este módulo se lee UNA VEZ al inicio del pipeline. Ejecútalo cuando no exista 
 - `test:` → TRIGGER_MODE = "test"
 - `refactor:` → TRIGGER_MODE = "refactor"
 - `bugfix:` → TRIGGER_MODE = "bugfix"
+- `unit-test:` → TRIGGER_MODE = "unit_test"
 - Patrón Jira (`PROJ-123`, `APP02272-123`) → TRIGGER_MODE = "jira"
 - Ninguno → TRIGGER_MODE = "fallback"
+
+### 1.1.5 Normalización de typos en trigger
+
+Antes de matchear el trigger, normalizar strings mal tipeados comunes:
+
+| Typo | Correcto |
+|------|----------|
+| `feaute:` | `feature:` |
+| `orquestar:` | `orquesta:` |
+| `analizr:` | `analiza:` |
+| `test:` | `test:` |
+| `refacor:` | `refactor:` |
+| `fix::` | `fix:` |
+| `revie:` | `review:` |
+
+Aplicar el mapa antes de la detección. Si después de normalizar el trigger matchea uno válido, usar ese. Si no matchea ninguno, caer a fallback.
 
 ### 1.2 Configuración por trigger
 
@@ -30,6 +47,7 @@ Este módulo se lee UNA VEZ al inicio del pipeline. Ejecútalo cuando no exista 
 | `test:` | TEST | — | sí | sí |
 | `refactor:` | REFACTOR | "refactor" | sí | no |
 | `bugfix:` | BUGFIX_TACTICO | "bug_fix" | sí | sí (usa bugfix_flow.md) |
+| `unit-test:` | UNIT_TEST | — | sí | sí |
 | `jira:` | COMPLETO | pregunta | no | no |
 | `fallback` | inferido | pregunta | no | no |
 
@@ -121,6 +139,7 @@ question(questions=[
 - `feature:` / `fix:` / `refactor:` → Solo pregunta modelo, omite change_type
 - `bugfix:` → Solo pregunta modelo (Phase 0.5 de bugfix_flow.md maneja la pregunta del checkpoint)
 - `review:` / `test:` → Solo pregunta modelo
+- `unit-test:` → Solo pregunta target coverage override (opcional, default 90%)
 - `jira:` → Solo pregunta change_type y modelo
 
 ---

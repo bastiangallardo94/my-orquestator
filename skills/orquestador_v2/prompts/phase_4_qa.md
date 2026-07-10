@@ -66,6 +66,21 @@ Si `codebase_project` (en .orquestador/_pointer.json) está disponible:
 Si `codebase_project` no está disponible o detect_changes falla, marca esta sección
 como "NO_DISPONIBLE" y continúa sin bloquear el resto del QA.
 
+## 4.5 Priorización de E2E por blast radius
+
+Si `codebase_project` disponible y hay impacto no anticipado:
+1. Para cada archivo en "Impacto no anticipado":
+   `codebase-memory-mcp_trace_path(project, function_name=<func>,
+        direction="inbound", depth=2, risk_labels=true)`
+2. Los archivos con más callers CRITICAL/HIGH son los más críticos
+3. Ordenar los specs E2E a ejecutar según el blast radius:
+   - Specs que prueban áreas CRITICAL → ejecutar primero
+   - Specs que prueban áreas HIGH → ejecutar después
+   - Specs que prueban áreas MEDIUM/LOW → ejecutar al final
+4. En qa-report.md reportar:
+   - Orden de ejecución: [spec] → [justificación]
+   - Specs ejecutados por orden de prioridad
+
 ============================================================
 ## VALIDACIONES E2E (condicional según change_type)
 ============================================================
@@ -122,6 +137,7 @@ Crea docs/qa-report.md con:
 ## Tests E2E
 - change_type: [feature | bug_fix]
 - Tests ejecutados: [todos / regresión + flujo tocado]
+- Orden de ejecución por blast radius: [spec → razón] o "sin priorización"
 - Resultados: [PASS/FAIL]
 
 ## Resumen
@@ -142,4 +158,5 @@ DEVUELVEME:
 - FAILED_TESTS: [ids de tests que fallaron, vacío si ninguno]
 - IMPACTO_NO_ANTICIPADO: [lista o "ninguno" o "NO_DISPONIBLE"]
 - E2E_SCOPE: [todos | regresión + flujo-tocado]
+- E2E_PRIORITY_ORDER: [spec → razón] o "sin priorización"
 - E2E_PASSING: N/Total

@@ -55,6 +55,32 @@ Si change_type == "bug_fix":
     y genera specs/[flujo-tocado].md con los escenarios que validan la corrección
     y que los flujos existentes siguen funcionando."
 
+## 3.5 Descubrimiento de flujos con MCP (codebase-memory-mcp)
+
+Si `codebase_project` disponible:
+1. Identificar entidades de negocio principales desde los planes:
+   - Leer docs/Plan_Frontend.md o docs/Plan_Backend.md
+   - Extraer nombres de entidades/dominios mencionados
+2. Para cada entidad:
+   `codebase-memory-mcp_search_graph(project, query="<entidad>")`
+3. Para cada función/entidad encontrada:
+   `codebase-memory-mcp_trace_path(project, function_name=<entidad>,
+        direction="inbound", depth=1)`
+   → Identificar qué handlers/controllers usan esta entidad
+4. Los handlers encontrados son los endpoints a testear en regresión
+5. Mapear a page objects / selectores automáticamente
+6. Incluir esta información en el contexto del Planner para generar specs más precisos
+
+## 3.6 Verificación de specs contra el código (WARNING only)
+
+Si `codebase_project` disponible:
+Para cada spec generado:
+1. `codebase-memory-mcp_search_code(project, pattern="<selector>",
+     mode="compact", limit=3)`
+2. Si encuentra el selector en el código → OK
+3. Si NO lo encuentra → WARN en el report:
+   "⚠️ Selector '[selector]' no encontrado en código. Puede ser válido si es dinámico o generado por JS."
+
 ============================================================
 ## OUTPUT ESPERADO
 ============================================================
