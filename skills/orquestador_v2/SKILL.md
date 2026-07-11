@@ -44,9 +44,10 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
   "impact": "BACKEND | FRONTEND | FULLSTACK",
   "user_request": "texto original del pedido",
   "change_type": "feature | bug_fix | refactor",
+  "offsite": false,
   "phase_order": ["phase_1_analyze", "checkpoint_1", "..."],
   "current_index": 0,
-  "deep_model": "gpt-5.1-codex | AGENTE_ACTUAL",
+  "deep_model": "orquestador-deep | orquestador-fast",
   "codebase_project": "Users-bgallardoc-proyecto | NO_DISPONIBLE",
   "mcp_available": true,
   "tools_detected": { "bd_mcp": {}, "rest_tester": {}, "codegen": {} },
@@ -292,15 +293,14 @@ Tras cada paso: `Write phases/{id}.json`, regenerar `summary.md`, actualizar `co
    - Sustituye variables de contexto leyendo de POINTER y phases previas
    - Si phase_3_coding/phase_3_5_review/phase_4_qa: antepone "Lee .orquestador/context.md"
 
-4. task(subagent_type=resolve_agent(PHASE.agent), description="...", prompt=ensamblado)
-   - Si `deep_model == "AGENTE_ACTUAL"` y `PHASE.agent == "orquestador-deep"` → usar `task(subagent_type="orquestador-deep")` (hereda el agente actual - usa deep directamente)
-   - Si `deep_model == "AGENTE_ACTUAL"` y `PHASE.agent == "orquestador-fast"` → usar `task(subagent_type="orquestador-fast")` (hereda el agente actual - usa fast directamente)
-   - En cualquier otro caso → usar `PHASE.agent` tal cual
-
-**Nota:** `resolve_agent(agent)` mapea el nombre del agente al `subagent_type` válido:
-   - `orquestador-deep` → `"orquestador-deep"`
-   - `orquestador-fast` → `"orquestador-fast"`
-   - other values → `"orquestador-fast"` (fallback por defecto a fast)
+4. task(subagent_type=resolve_agent(PHASE.agent, deep_model), ...)
+   - `resolve_agent(phase_agent, deep_model)` SIEMPRE retorna un `subagent_type` válido:
+     - `deep_model` **tiene prioridad** cuando el usuario eligió explícitamente un subagente en la pregunta de bootstrap
+     - Si `deep_model` está en `["orquestador-deep", "orquestador-fast"]` → usar `deep_model`
+     - Si no → usar `phase_agent` (fallback seguro)
+     - Si `phase_agent` tampoco es válido → `"orquestador-fast"` (fallback final)
+   - `task()` SOLO recibe `subagent_type` válidos: `"orquestador-deep"` o `"orquestador-fast"`
+   - **NUNCA uses `deep_model` como `subagent_type` directamente** — siempre pasa por `resolve_agent`
 
 5. EXIT CHECK:
    orquestador-verify(phase_id=PHASE.id, exit_files=PHASE.exit_files, project_path=cwd)
@@ -365,6 +365,89 @@ Antes de `phase_2_frontend`:
 Regla dura: un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de contenido en el mismo turno.
 
 **Tras HITL aprobado:** `orchestrator-git-checkpoint(project_path=cwd, checkpoint_name=X, approved=true, notes=Y)` → tag git para rollback granular.
+
+---
+
+## Modo Offsite Global (Slack Bridge)
+
+El modo offsite permite que **TODAS** las interacciones con el usuario (checkpoints, preguntas de bootstrap, selección de modo, manejo de fallos, etc.) se envíen a **Slack** en lugar de usar `question()` interactivo en la terminal. El usuario responde desde Slack y el bridge recoge la respuesta.
+
+### Activación
+
+Se activa automáticamente cuando el usuario incluye `--offsite` en su prompt:
+```
+@orquestador --offsite feature: login
+feature: --offsite add user CRUD
+--offsite orquesta: refactor API
+```
+
+El flag `--offsite` se detecta en Phase 0 Bootstrap y se guarda como `offsite: true` en `_pointer.json`.
+
+### Requisitos (slack-bridge MCP)
+
+El MCP server `slack-bridge` debe estar habilitado en `opencode.json`. El bridge:
+- Se auto-inicia cuando opencode arranca (declarado como MCP local)
+- Conecta a Slack via Socket Mode
+- Inicia ngrok automáticamente para exponer endpoint HTTPS
+- Escucha interacciones de botones, selects dropdowns y modales de texto
+
+### Flujo Offsite Global (reemplaza TODO `question()`)
+
+Cuando `offsite: true`, CADA llamado a `question()` se enruta a Slack:
+
+```
+1. Leer _pointer.json → offsite flag
+2. Si offsite == true:
+   a. PREGUNTA CON OPCIONES (options[]):
+      - slack_bridge_ask_question(q_id, title, summary, question, options, allow_custom=true, project_name)
+        → ≤5 opciones: botones individuales
+        → >5 opciones: static_select dropdown
+        → Siempre incluye botón "✏️ Custom answer" (abre modal de texto)
+      - slack_bridge_wait_for_answer(q_id)
+        → Retorna { answer, answer_type, user_name }
+      - Usar answer como resultado
+
+   b. PREGUNTA DE TEXTO LIBRE (sin options):
+      - slack_bridge_ask_text(q_id, title, summary, question, project_name)
+        → Botón "✏️ Write answer" → modal de texto libre
+      - slack_bridge_wait_for_answer(q_id)
+
+   c. MULTI-PREGUNTA (questions[] array):
+      - Enviar UNA POR UNA secuencialmente:
+        ask_question(q1) → wait → ask_question(q2) → wait → ...
+
+   d. CHECKPOINTS (flujo existente):
+      - slack_bridge_send_checkpoint(...) + slack_bridge_wait_for_checkpoint(...)
+        → Aprobación/Rechazo con botones Approve/Reject
+      - Ver prompts/checkpoints.md para reglas específicas
+
+3. Si offsite == false → usar question() normal
+```
+
+### Herramientas MCP (slack-bridge)
+
+| Tool | Descripción |
+|------|-------------|
+| `slack-bridge` → `slack_bridge_ask_question` | Enviar pregunta con opciones (botones o dropdown) + custom text modal |
+| `slack-bridge` → `slack_bridge_ask_text` | Enviar pregunta de texto libre que abre modal |
+| `slack-bridge` → `slack_bridge_wait_for_answer` | Polling hasta que el usuario responda (retorna answer + user_name) |
+| `slack-bridge` → `slack_bridge_send_checkpoint` | Enviar checkpoint con botones Approve/Reject |
+| `slack-bridge` → `slack_bridge_wait_for_checkpoint` | Polling para checkpoints |
+| `slack-bridge` → `slack_bridge_cancel_checkpoint` | Cancelar pregunta/checkpoint activo |
+| `slack-bridge` → `slack_bridge_send_message` | Enviar texto a Slack |
+| `slack-bridge` → `slack_bridge_status` | Verificar estado del bridge (incluye ngrok URL, questions activas) |
+
+### Variables de Entorno (para config del bridge, no para el orquestador)
+
+- `SLACK_BOT_TOKEN` — token del bot de Slack (xoxb-...)
+- `SLACK_APP_TOKEN` — token de la app para Socket Mode (xapp-...)
+- `SLACK_SIGNING_SECRET` — signing secret de la Slack App
+- `SLACK_CHANNEL_ID` — canal destino para checkpoints y preguntas (C0...)
+- `SLACK_BRIDGE_HTTP_PORT` — puerto HTTP local (default: 3121)
+
+### Fallback
+
+Si las tools del bridge fallan (bridge caído), usar `question()` en terminal como fallback. No detener el pipeline.
 
 ---
 

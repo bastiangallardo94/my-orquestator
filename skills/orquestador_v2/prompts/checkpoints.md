@@ -231,6 +231,64 @@ Este checkpoint implementa la lógica de loop para coverage incremental.
          - "Detener" → status = STOPPED, avanzar a phase_ut_report
 ```
 
+---
+
+## Modo Offsite Global (--offsite)
+
+Cuando el pipeline se ejecuta con `--offsite` activo, **TODAS** las interacciones con el usuario van a Slack, no solo los checkpoints. Ver la sección "Modo Offsite Global" en `SKILL.md` para el protocolo completo.
+
+Los checkpoints siguen siendo un **caso particular** del flujo offsite global:
+
+### Protocolo Offsite para Checkpoints
+
+```
+1. Leer _pointer.json → offsite flag
+2. Preparar datos del checkpoint (summary.md, fases anteriores, etc.)
+3. Si offsite == true:
+   a. slack_bridge_send_checkpoint(checkpoint_id, title, summary, question, project_name)
+      → Envía card con botones Approve/Reject a Slack
+   b. slack_bridge_wait_for_checkpoint(checkpoint_id)
+      → Polling hasta respuesta
+   c. Según resultado:
+      - approved → status=APPROVED, current_index++
+      - rejected → status=REJECTED, retroceder fase
+4. Si offsite == false:
+   → Usar question() normal
+```
+
+### Diferencias con modo normal
+
+| Aspecto | Normal | Offsite (Slack) |
+|---------|--------|-----------------|
+| Comunicación | `question()` inline | Mensaje con botones via Slack |
+| Espera | Síncrona (user responde en chat) | Asíncrona (polling bridge) |
+| Timeout | Ninguno | Infinito (hasta que usuario responda) |
+| Auto-approve checkpoint_2 | Sí (PIC PASS) | Sí (misma regla) |
+| Auto-approve checkpoint_maps | Sí (coverage ≥ 80%) | Sí (misma regla) |
+
+### Activación
+
+Ver `SKILL.md` → "Modo Offsite Global" → Activación.
+
+### MCP Tools para Offsite (Slack)
+
+| Tool | Descripción |
+|------|-------------|
+| `slack-bridge` → `slack_bridge_ask_question` | Pregunta con opciones (botones/dropdown + custom modal) |
+| `slack-bridge` → `slack_bridge_ask_text` | Pregunta de texto libre con modal |
+| `slack-bridge` → `slack_bridge_wait_for_answer` | Polling para respuesta de pregunta |
+| `slack-bridge` → `slack_bridge_send_checkpoint` | Checkpoint con botones Approve/Reject |
+| `slack-bridge` → `slack_bridge_wait_for_checkpoint` | Polling para checkpoint |
+| `slack-bridge` → `slack_bridge_cancel_checkpoint` | Cancela pregunta/checkpoint activo |
+| `slack-bridge` → `slack_bridge_send_message` | Envía texto a Slack |
+| `slack-bridge` → `slack_bridge_status` | Verifica estado del bridge |
+
+### Fallback
+
+Si las tools del bridge fallan, usar `question()` en terminal como fallback. No detener el pipeline.
+
+---
+
 **Generación de coverage-history.md (si no existe):**
 
 ```markdown

@@ -35,6 +35,58 @@ Antes de matchear el trigger, normalizar strings mal tipeados comunes:
 
 Aplicar el mapa antes de la detección. Si después de normalizar el trigger matchea uno válido, usar ese. Si no matchea ninguno, caer a fallback.
 
+### 1.1.6 Detección de `--offsite`
+
+Antes de detectar el trigger, verificar si `user_request` contiene `--offsite`:
+
+1. Si `user_request` contiene `--offsite` → extraerlo y guardar `ORQUESTADOR_OFFSITE=true`
+2. Si además `user_request` contiene `@orquestador` → extraerlo también (no afecta al trigger)
+3. El texto restante (sin `--offsite` ni `@orquestador`) se usa para la detección de trigger normal
+4. Ejemplos:
+   - `@orquestador --offsite feature: login` → trigger=`feature:`, offsite=true
+   - `--offsite orquesta: hola` → trigger=`orquesta:`, offsite=true
+   - `feature: login` → trigger=`feature:`, offsite=false
+
+### 1.1.7 Health Check del Bridge (si `--offsite` activo)
+
+Si `ORQUESTADOR_OFFSITE=true` después del paso 1.1.6:
+
+1. Listar MCP servers disponibles: buscar `slack-bridge` en las herramientas del contexto.
+2. Si `slack-bridge` está disponible:
+   - Ejecutar `slack_bridge_status()` para verificar conexión activa.
+   - Si `status == "running"` y `slack_connected == true`:
+     - Mostrar: `✅ Slack bridge OK — canal: {channel_id} | ngrok: {ngrok_url}`
+     - Continuar bootstrap normalmente.
+   - Si `slack_connected == false` o error:
+     - Mostrar: `❌ Slack bridge caído.`
+     - Hacer `question()` con opciones:
+       - "Intentar de nuevo" → re-ejecutar health check
+       - "Usar question() en terminal (fallback)" → `ORQUESTADOR_OFFSITE=false`, continuar
+       - "Ver instrucciones de configuración" → mostrar guía rápida:
+         ```
+         Para configurar slack-bridge:
+         1. Agregar a opencode.json:
+            "mcpServers": {
+              "slack-bridge": {
+                "command": "npx",
+                "args": ["@opencode/slack-bridge"],
+                "env": {
+                  "SLACK_BOT_TOKEN": "xoxb-...",
+                  "SLACK_APP_TOKEN": "xapp-...",
+                  "SLACK_CHANNEL_ID": "C0..."
+                }
+              }
+            }
+         2. O clonar y ejecutar localmente desde:
+            github.com/anomalyco/slack-bridge
+         ```
+3. Si `slack-bridge` NO está disponible en las herramientas:
+   - Mostrar: `ℹ️ slack-bridge no está configurado como MCP server.`
+   - Hacer `question()` con opciones:
+     - "Usar question() en terminal (fallback)" → continuar sin offsite
+     - "Mostrar instrucciones de configuración" → ver guía arriba
+     - "Omitir y seguir igual (fallback automático)" → continuar sin offsite
+
 ### 1.2 Configuración por trigger
 
 | Trigger | Flow | change_type | skip_tipo_cambio | skip_phase_0_5 |
@@ -93,6 +145,46 @@ Si el proyecto parece multi-repo (`turbo.json`, `nx.json`, `packages/*/package.j
 - Si hay patrones con `confidence < 0.5` → marcar como "experimentales"
 - Guardar `knowledge_available` en `_pointer.json`
 
+### 1.9 Detección de Worktree
+
+#### 1.9.1 Detectar si estamos en un worktree
+```bash
+git rev-parse --is-inside-work-tree
+git worktree list --porcelain
+```
+
+#### 1.9.2 Extraer información del worktree actual
+- `worktree_name`: basename del directorio actual
+- `worktree_path`: path absoluto
+- `worktree_branch`: rama actual (`git branch --show-current`)
+- `is_main_repo`: true si NO es un worktree (directorio root)
+
+#### 1.9.3 Estructura _pointer.json con worktree info
+```json
+{
+  "worktree": {
+    "name": "feature-login",
+    "path": "/Users/repo/worktrees/feature-login",
+    "branch": "feature/login",
+    "is_worktree": true,
+    "parent_repo": "/Users/repo"
+  }
+}
+```
+
+#### 1.9.4 Para worktree:list
+Si el trigger es `worktree:list`:
+- Ejecutar `git worktree list --porcelain`
+- Por cada worktree, detectar si tiene `.orquestador/_pointer.json`
+- Si tiene: leer flow, phase actual, status
+- Si no: marcar como "sin pipeline"
+- Generar tabla de resumen
+
+#### 1.9.5 Para worktree:create
+Si el trigger es `worktree:create`:
+- Ir a protocolo de creación en `prompts/worktree_management.md`
+- NO continuar con bootstrap normal
+
 ---
 
 ## Paso 2: CONFIRMAR
@@ -122,25 +214,23 @@ question(questions=[
     // Solo si skip_tipo_cambio == false
   },
   {
-    question: "¿Qué modelo para el agente deep?",
-    header: "Modelo",
+    question: "¿Qué tipo de subagente usar para fases deep?",
+    header: "Subagente deep",
     options: [
-      "Heredar agente actual (Recomendado)",
-      "opencode/gpt-5.1-codex",
-      "anthropic/claude-sonnet-4-20250514",
-      "openai/gpt-4o"
+      "orquestador-deep (Recomendado — análisis profundo, planificación, codificación TDD)",
+      "orquestador-fast (rápido — QA, playwright, reporting)"
     ]
   }
 ])
 ```
 
 **Excepciones:**
-- `analiza:` → Solo pregunta modelo, omite flow y change_type
-- `feature:` / `fix:` / `refactor:` → Solo pregunta modelo, omite change_type
-- `bugfix:` → Solo pregunta modelo (Phase 0.5 de bugfix_flow.md maneja la pregunta del checkpoint)
-- `review:` / `test:` → Solo pregunta modelo
+- `analiza:` → Solo pregunta subagente, omite flow y change_type
+- `feature:` / `fix:` / `refactor:` → Solo pregunta subagente, omite change_type
+- `bugfix:` → Solo pregunta subagente (Phase 0.5 de bugfix_flow.md maneja la pregunta del checkpoint)
+- `review:` / `test:` → Solo pregunta subagente
 - `unit-test:` → Solo pregunta target coverage override (opcional, default 90%)
-- `jira:` → Solo pregunta change_type y modelo
+- `jira:` → Solo pregunta change_type y subagente
 
 ---
 
@@ -165,7 +255,7 @@ question(questions=[
 Filtrar la Tabla Maestra según flow+impact confirmados.
 
 ### 3.4 Escribir estado inicial
-- `Write .orquestador/_pointer.json`
+- `Write .orquestador/_pointer.json` incluyendo `offsite: true/false` según detección en 1.1.6
 - `Write .orquestador/phases/<cada id>.json` con `status: "PENDING"`
 - `Write .orquestador/summary.md` inicial
 - `Write .orquestador/context.md` desde `prompts/context_template.md`

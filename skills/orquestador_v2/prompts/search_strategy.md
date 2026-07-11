@@ -17,13 +17,19 @@ SOLO para archivos que no estan indexados (nuevos, configs no-code, exit_files r
 `codebase_project` (guardado en `_pointer.json`) es el identificador a pasar en TODAS las llamadas.
 Si vale `"NO_DISPONIBLE"`, saltar directo a la seccion FALLBACK al final de este documento.
 
+**VERIFICACION OBLIGATORIA antes de llamar cualquier tool MCP:**
+1. Leer `_pointer.json` → extraer `codebase_project`
+2. Si es `"NO_DISPONIBLE"` → ir directo a FALLBACK
+3. Si existe → verificar que el proyecto este indexado con `codebase-memory-mcp_list_projects`
+4. Si el proyecto NO esta en la lista → ir directo a FALLBACK (el proyecto nunca fue indexado)
+
 ---
 
 ## Mapa de Necesidades → Tool + Modo
 
 | Necesidad | Tool MCP | Parametros clave | Reemplaza |
 |-----------|----------|-------------------|-----------|
-| "¿Existe esta funcion/clase/ruta?" | `search_graph` | `name_pattern=".*X.*"` o `query="X"` | grep por nombre |
+| "¿Existe esta funcion/clase/ruta?" | `search_graph` | `name_pattern` + fallback con `query` | grep por nombre |
 | "¿Donde se usa este string literal?" | `search_code` | `pattern="X"` | grep |
 | "¿Que archivos matchean este patron?" | `search_code` | `pattern="X", mode="files"` | Glob |
 | "¿Que funciones/exportaciones hay en este archivo?" | `search_code` | `pattern="export\|func\|def", file_pattern="archivo.ts"` | grep + Read |
@@ -46,9 +52,10 @@ Si vale `"NO_DISPONIBLE"`, saltar directo a la seccion FALLBACK al final de este
 2. ¿Que tipo de busqueda necesitas?
 
    A) Encontrar una FUNCION/CLASE/RUTA por nombre:
-      → search_graph(project, name_pattern=".*termino.*")
-      → Si 0 resultados: search_graph(project, query="termino")
-      → Si aun 0: FALLBACK a grep
+       → search_graph(project, name_pattern=".*termino.*")  ← regex parcial, incluye el termino en cualquier parte
+       → Si 0 resultados: REINTENTO con name_pattern="^termino.*"  ← regex desde el inicio (mas preciso)
+       → Si aun 0: search_graph(project, query="termino")  ← semantico como ultimo recurso antes de fallback
+       → Si 0 resultados: FALLBACK a grep
 
    B) Encontrar un STRING LITERAL (mensaje de error, config, variable):
       → search_code(project, pattern="termino", mode="compact")
@@ -136,7 +143,16 @@ search_code(project, pattern="process.env|import.meta.env", mode="compact")
 
 ## FALLBACK — Cuando MCP no esta disponible
 
-Si `codebase_project == "NO_DISPONIBLE"` o si un tool MCP devuelve 0 resultados:
+**MOTIVOS VALIDOS para usar FALLBACK:**
+1. `codebase_project == "NO_DISPONIBLE"` en `_pointer.json`
+2. `codebase-memory-mcp_list_projects` no muestra el proyecto actual
+3. El tool MCP devolvio 0 resultados tras 2 reintentos (name_pattern con distintos regex + query semantico)
+4. Archivos recien creados en este pipeline (no indexados aun)
+5. Verificar exit_files de una fase (archivos que el subagente acaba de crear)
+6. Strings en archivos no-codigo (configs, Dockerfiles, .env)
+7. Necesidad de resultados rapidos sin overhead del grafo
+
+**FALLBACK por tipo de busqueda:**
 
 | Necesidad | Fallback |
 |-----------|----------|
@@ -145,6 +161,34 @@ Si `codebase_project == "NO_DISPONIBLE"` o si un tool MCP devuelve 0 resultados:
 | Funciones/clases | `grep(pattern="function\|class\|def\|func", include="*.ext")` |
 | Imports de un archivo | `grep(pattern="from.*archivo\|import.*archivo")` |
 | Config files | `Glob("**/Dockerfile*")`, `Glob("**/.env*")`, `Glob("**/*.yaml")` |
+
+---
+
+## Debugging — Cuando search_graph falla
+
+Si `search_graph` no encuentra lo que esperas:
+
+```
+1. Verificar que el proyecto esta indexado:
+   → codebase-memory-mcp_list_projects
+   → Buscar el nombre exacto del proyecto en la lista
+
+2. Verificar que el nombre coincide con codebase_project:
+   → Read _pointer.json → verificar campo "codebase_project"
+   → El nombre debe ser IDENTICO al que aparece en list_projects
+
+3. Probar busqueda directa en el grafo:
+   → query_graph(project, query="MATCH (n) WHERE n.name CONTAINS 'termino' RETURN n.name LIMIT 5")
+
+4. Si el proyecto NO esta indexado:
+   → No intentar usar MCP → ir directo a FALLBACK
+   → Reportar en el checkpoint que el proyecto necesita ser indexado
+
+5. Errores comunes:
+   - "Project not found" → el nombre en project= no coincide con el indice
+   - 0 resultados con name_pattern → el nombre real en el codigo es diferente
+   - 0 resultados con query → el proyecto puede no estar indexado o no tiene ese contenido
+```
 
 ---
 
