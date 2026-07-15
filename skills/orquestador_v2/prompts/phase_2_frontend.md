@@ -3,7 +3,7 @@ phase_id: phase_2_frontend
 type: agent
 agent: orquestador-deep
 entry_condition: "docs/CHANGELOG_LOGICO.md debe existir. El orquestador ya debe haber resuelto el Modo A/B via question() antes de ensamblar este prompt."
-hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/openapi.yaml, AGENTS.md]
+hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/openapi.yaml, AGENTS.md, openspec/changes/*/specs/**, openspec/changes/*/tasks.md]
 exit_check: static
 exit_files: [docs/Plan_Frontend.md]
 supports_partial_retry: false
@@ -11,6 +11,30 @@ max_retries: 3
 ---
 
 {contenido_inyectado_desde_planner_front.md}
+
+## Input: OpenSpec Specs
+
+Antes de escribir el plan, lee los artefactos OpenSpec generados en phase_1_5:
+
+1. `Glob openspec/changes/*/specs/**` → specs del cambio (requirements + scenarios)
+2. `Glob openspec/changes/*/tasks.md` → tareas de implementación
+3. `Glob openspec/changes/*/proposal.md` → contexto del cambio
+
+Para cada Requirement en los specs, identifica:
+- ¿Qué componentes frontend toca? (pages/components/hooks/stores)
+- ¿Qué escenarios (Given/When/Then) deben ser verificables por tests de frontend?
+- ¿Qué archivos nuevos o modificaciones implica?
+
+**Salida de trazabilidad:** el Plan_Frontend.md debe incluir una sección que trace cada Requirement de OpenSpec a los tests que lo cubrirán:
+
+```markdown
+## Trazabilidad OpenSpec → Tests Frontend
+
+| Requirement | Escenario | Test Planificado | Componente |
+|------------|-----------|-----------------|------------|
+| Dark Mode | Toggle activa dark theme | ThemeToggle.test.tsx:TestToggleDark | ThemeToggle |
+| Dark Mode | Persiste en localStorage | useTheme.test.ts:TestLocalStorage | useTheme |
+```
 
 ## Consulta de Patrones Probados (antes de escribir el plan)
 1. `Read ~/.config/opencode/knowledge/registry.json` → buscar patrones frontend

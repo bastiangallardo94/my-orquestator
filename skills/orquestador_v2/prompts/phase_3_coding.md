@@ -3,7 +3,7 @@ phase_id: phase_3_coding
 type: agent
 agent: orquestador-fast
 entry_condition: "Al menos un docs/Plan_Backend.md o docs/Plan_Frontend.md debe existir"
-hash_inputs: [docs/Plan_Backend.md, docs/Plan_Frontend.md, docs/CHANGELOG_LOGICO.md]
+hash_inputs: [docs/Plan_Backend.md, docs/Plan_Frontend.md, docs/CHANGELOG_LOGICO.md, openspec/changes/*/specs/**]
 exit_check: verify_reported_files
 exit_files: []
 supports_partial_retry: true
@@ -50,6 +50,70 @@ LEE estos archivos del skill coder_agent (NO los recibes inline, leelos):
    - Usar como base para la implementacion
 
 Aplica TODAS las reglas de esos archivos.
+
+============================================================
+## OPENSPEC — TDD CONTRA ESCENARIOS FORMALES
+============================================================
+
+Los artefactos OpenSpec (generados en phase_1_5) contienen los escenarios formales
+que el código debe satisfacer. **Todo escenario en los specs debe tener un test
+que lo verifique.**
+
+### Lectura de escenarios
+
+1. `Glob openspec/changes/*/specs/**` → leer todos los specs del cambio activo
+2. Para cada archivo, extraer:
+   - `Requirement: <nombre>` → qué funcionalidad
+   - `Scenario: <nombre>` → caso concreto en Given/When/Then
+3. Si `openspec/specs/` existe (specs globales de cambios anteriores):
+   - Leer también specs globales para entender el sistema completo
+   - Identificar qué requirements globales podrían verse afectados
+
+### Cobertura obligatoria de escenarios
+
+**Regla dura:** CADA Scenario en los specs DEBE tener un test correspondiente:
+
+```
+Spec: User Authentication
+  Requirement: Login con credenciales válidas
+    Scenario: Login exitoso
+      → Test: usecase_test.go:TestLoginSuccess
+    Scenario: Login con password incorrecto
+      → Test: usecase_test.go:TestLoginWrongPassword
+    Scenario: Login con usuario bloqueado
+      → Test: usecase_test.go:TestLoginBlockedUser
+```
+
+### Flujo TDD por escenario
+
+Para cada Scenario en los specs:
+```
+1. Escribir test que verifica el Scenario (RED)
+   - El test DEBE nombrarse incluyendo el Requirement ID
+   - Ej: TestLoginSuccess, TestLoginWrongPassword
+2. Implementar código mínimo para que pase (GREEN)
+3. Refactorizar si es necesario (REFACTOR)
+4. Verificar que el test del Requirement pasa
+```
+
+### Verificación de cobertura de especificación
+
+Al final de la codificación:
+1. Lista completa de Scenarios de los specs
+2. Para cada Scenario: test que lo cubre o "NO_CUBIERTO"
+3. Calcular: `spec_coverage = escenarios_con_test / escenarios_totales`
+4. Si spec_coverage < 100%: listar escenarios NO_CUBIERTOS como FILES_SKIPPED
+
+### Trazabilidad en el output
+
+Incluir en TESTS_POST_GROUP una sección de trazabilidad:
+```
+OPENSPEC_TRACEABILITY:
+  - Requirement: User Authentication → 3/3 escenarios cubiertos
+  - Requirement: Session Expiration → 2/2 escenarios cubiertos
+  - NO_CUBIERTO: []
+  - spec_coverage: 100%
+```
 
 ============================================================
 ## CONTEXTO DEL PIPELINE

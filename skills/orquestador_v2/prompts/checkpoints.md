@@ -42,6 +42,7 @@ Un checkpoint SOLO pregunta y registra. Nunca ejecutes una fase de contenido en 
 |---|---|---|---|
 | checkpoint_maps | "¿Validamos los mapas de arquitectura?" | Ver detalles / Ignorar gaps | Auto-approve si coverage ≥ 80% |
 | checkpoint_1 | "¿La lógica de negocio y casos de uso son correctos?" | Aprobar / Rechazar / Ver detalle | No — BLINDAJE ACTIVO |
+| checkpoint_1_5 | "¿Las especificaciones OpenSpec cubren correctamente el cambio?" | Aprobar / Ver proposal / Ver specs / Rechazar (ver prompts/checkpoint_1_5.md) | No — BLINDAJE ACTIVO |
 | checkpoint_2 | "¿Apruebas el plan técnico para comenzar codificación?" | Aprobar / Rechazar / Ver plan | Auto-approve si PIC == PASS y sin WARNs |
 | checkpoint_3 | Mostrar resumen real: archivos, tests, cobertura, compile, lint, CR. Luego: "¿Apruebas?" | Aprobar / Ver detalle CR / Rechazar | No |
 | checkpoint_4 | "¿Apruebas QA para pasar a documentación/reporte?" | Aprobar / Revisar fallidos / Known issues | No |
@@ -263,6 +264,7 @@ Los checkpoints siguen siendo un **caso particular** del flujo offsite global:
 | Comunicación | `question()` inline | Mensaje con botones via Slack |
 | Espera | Síncrona (user responde en chat) | Asíncrona (polling bridge) |
 | Timeout | Ninguno | Infinito (hasta que usuario responda) |
+| Auto-approve checkpoint_1_5 | No — BLINDAJE ACTIVO | No — BLINDAJE ACTIVO |
 | Auto-approve checkpoint_2 | Sí (PIC PASS) | Sí (misma regla) |
 | Auto-approve checkpoint_maps | Sí (coverage ≥ 80%) | Sí (misma regla) |
 

@@ -29,6 +29,7 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 ├── context.md            # Contexto compacto del pipeline (persistente, ~50 líneas)
 ├── dependency-groups.json # Grupos de paralelización (generado por phase_2_7_pic_deps)
 ├── api-surface.md        # API Surface Map (generado por phase_0_5)
+├── openspec/             # OpenSpec artifacts (proposal, specs, design, tasks)
 ├── phases/
 │   └── <phase_id>.json   # Un archivo por fase
 ├── cache/
@@ -47,9 +48,11 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
   "offsite": false,
   "phase_order": ["phase_1_analyze", "checkpoint_1", "..."],
   "current_index": 0,
-  "deep_model": "orquestador-deep | orquestador-fast",
+  "agent_override": "orquestador-deep | orquestador-fast | null",
   "codebase_project": "Users-bgallardoc-proyecto | NO_DISPONIBLE",
   "mcp_available": true,
+  "openspec_available": true,
+  "openspec_init": true,
   "tools_detected": { "bd_mcp": {}, "rest_tester": {}, "codegen": {} },
   "worktree": {
     "name": "feature-login | null",
@@ -95,17 +98,25 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 | 0.5 | phase_0_5_validate_maps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | deep |
 | 0.6 | checkpoint_maps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
 | 1 | phase_1_analyze | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | deep |
+| 1.5 | phase_1_5_openspec | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | deep |
+| 1.6 | checkpoint_1_5 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
 | 2 | checkpoint_1 | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
 | 3 | phase_2_backend | ✅* | ✅* | ❌ | ✅* | ❌ | ❌ | ✅* | ❌ | agent | deep |
 | 4 | phase_2_frontend | ✅* | ✅* | ❌ | ✅* | ❌ | ❌ | ✅* | ❌ | agent | deep |
 | 5 | phase_2_5_playwright | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | fast |
 | 6 | checkpoint_2 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
 | 7 | phase_2_7_pic_deps | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | fast |
+| 8 | phase_2_8_conflict_detection | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | fast |
 | 9 | phase_3_coding | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | fast |
 | 10 | phase_3_5_review | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ | agent | fast |
 | 11 | checkpoint_3 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
+| 11.5 | phase_3_7_risk_assessment | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | fast |
 | 12 | phase_4_qa | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | agent | fast |
 | 13 | checkpoint_4 | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | checkpoint | — |
+| 13.2 | phase_4_5_telemetry | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | agent | fast |
+| 13.5 | phase_5_5_ponytail_review | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | deep |
+| 13.6 | checkpoint_ponytail | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | checkpoint | — |
+| 13.7 | phase_5_7_pull_request | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | agent | fast |
 | 14 | phase_5_docs | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | agent | fast |
 | 15 | phase_6_report | ✅ | ✅ | ✅ | ✅ | inline | inline | ✅ | inline | report | — |
 | 16 | checkpoint_review | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | checkpoint | — |
@@ -127,6 +138,8 @@ Eres el director del flujo de desarrollo software. **NO decides el flujo mediant
 | WT4 | phase_wt_remove | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | agent | fast |
 
 `*` Solo si `impact=FULLSTACK` (se lanzan en paralelo).
+
+> **Nota:** La columna `agent` muestra el valor por defecto del frontmatter de cada fase. Si `agent_override` está definido en `_pointer.json`, **tiene prioridad absoluta** sobre estos valores para todas las fases.
 
 **WORKTREE flows** son standalone y no siguen el pipeline normal de fases.
 
@@ -293,14 +306,14 @@ Tras cada paso: `Write phases/{id}.json`, regenerar `summary.md`, actualizar `co
    - Sustituye variables de contexto leyendo de POINTER y phases previas
    - Si phase_3_coding/phase_3_5_review/phase_4_qa: antepone "Lee .orquestador/context.md"
 
-4. task(subagent_type=resolve_agent(PHASE.agent, deep_model), ...)
-   - `resolve_agent(phase_agent, deep_model)` SIEMPRE retorna un `subagent_type` válido:
-     - `deep_model` **tiene prioridad** cuando el usuario eligió explícitamente un subagente en la pregunta de bootstrap
-     - Si `deep_model` está en `["orquestador-deep", "orquestador-fast"]` → usar `deep_model`
-     - Si no → usar `phase_agent` (fallback seguro)
+4. task(subagent_type=resolve_agent(PHASE.agent, agent_override), ...)
+   - `resolve_agent(phase_agent, agent_override)` SIEMPRE retorna un `subagent_type` válido:
+     - `agent_override` **tiene prioridad ABSOLUTA sobre `phase_agent`** para TODAS las fases
+     - Si `agent_override` está en `["orquestador-deep", "orquestador-fast"]` → usar `agent_override` SIEMPRE, sin importar el `phase_agent` del frontmatter
+     - Si `agent_override` es `null` o no está en la lista → usar `phase_agent` del frontmatter
      - Si `phase_agent` tampoco es válido → `"orquestador-fast"` (fallback final)
    - `task()` SOLO recibe `subagent_type` válidos: `"orquestador-deep"` o `"orquestador-fast"`
-   - **NUNCA uses `deep_model` como `subagent_type` directamente** — siempre pasa por `resolve_agent`
+   - **NUNCA uses `agent_override` como `subagent_type` directamente** — siempre pasa por `resolve_agent`
 
 5. EXIT CHECK:
    orquestador-verify(phase_id=PHASE.id, exit_files=PHASE.exit_files, project_path=cwd)
@@ -332,6 +345,28 @@ Antes de `phase_2_frontend`:
 
 ---
 
+## Phase 2.8: Cross-Pipeline Conflict Detection
+
+**Lee `prompts/phase_2_8_conflict_detection.md`**.
+Detecta pipelines concurrentes en el mismo repositorio que puedan generar conflictos con el pipeline actual. Corre justo antes de `phase_3_coding`.
+
+Descubrimiento:
+- **Otras ramas**: `git branch -a` + buscar `.orquestador/_pointer.json`
+- **Worktrees activos**: `git worktree list` + verificar `.orquestador/`
+- **Histórico reciente**: pipelines < 7 días en `.orquestador/history/`
+
+Clasificación:
+| Nivel | Condición |
+|-------|-----------|
+| 🔴 CONFLICTO | Mismo archivo, mismas líneas |
+| 🟠 OVERLAP | Mismo archivo, distintas líneas |
+| 🟡 TENSION | Mismo módulo, distintos archivos |
+| 🟢 COMPATIBLE | Sin overlap |
+
+Si hay 🔴/🟠 pregunta al usuario: resolver ahora (merge) o ignorar. Output: `docs/conflict-report.md`.
+
+---
+
 ## Phase 3.5: Code Review
 
 **Lee `prompts/phase_3_5_review.md`**. Responsabilidades:
@@ -341,6 +376,85 @@ Antes de `phase_2_frontend`:
 4. Generar `docs/code-review-report.md`
 
 `exit_check: none` (puramente analítica).
+
+---
+
+## Phase 3.7: Risk-Based Test Assessment (RBT)
+
+**Lee `prompts/phase_3_7_risk_assessment.md`**.
+Clasifica cada escenario de prueba por riesgo para priorizar la ejecución en QA.
+
+Factores de riesgo:
+- **A (35%)**: Impacto del código modificado (callers, capa, complejidad)
+- **B (30%)**: Criticidad del escenario OpenSpec (severidad, seguridad, core business)
+- **C (20%)**: Historial de fallos (retries, flakiness, test nuevo)
+- **D (15%)**: Blast radius (servicios afectados, capas, contratos)
+
+Output: `docs/risk-assessment.md` con matriz CRITICAL → HIGH → MEDIUM → LOW por test.
+
+La fase `phase_4_qa` lee este assessment para ordenar ejecución (fail fast en CRITICAL, sampling en LOW). Si el archivo no existe, QA ejecuta sin priorización.
+
+---
+
+## Phase 4.5: Pipeline Telemetry
+
+**Lee `prompts/phase_4_5_telemetry.md`**.
+Recolecta datos de todas las fases ejecutadas y compila un dashboard de telemetría del pipeline.
+
+Métricas recolectadas:
+- **Duración**: por fase y total (started_at → completed_at)
+- **Código**: archivos creados/modificados, tests, cobertura
+- **Calidad**: CR_SCORE (phase_3_5_review), Ponytail Score, Tech Debt
+- **Riesgo**: RBT distribution desde risk-assessment.md
+- **Eficiencia**: score compuesto 0-100 (penaliza retries, lint/compile fails)
+- **Tendencia**: comparación vs pipeline anterior en `.orquestador/history/`
+
+Output: `docs/pipeline-telemetry.md` — dashboard que se incluye en el cuerpo del PR. No tiene checkpoint asociado (puramente analítico).
+
+---
+
+## Phase 5.5: Ponytail Code Quality Review
+
+**Lee `prompts/phase_5_5_ponytail_review.md`**.
+Análisis profundo de calidad del código generado. No es un linter — es una revisión con criterio humano sobre complejidad, duplicación, adherencia a patrones, nomenclatura, testabilidad y cobertura de escenarios OpenSpec.
+
+Responsabilidades:
+1. Calcular complejidad ciclomática por archivo (MCC)
+2. Detectar duplicación de código
+3. Validar adherencia a patrones del knowledge base
+4. Revisar nombres, estructura y testabilidad
+5. Verificar cobertura de escenarios OpenSpec
+6. Estimar deuda técnica en horas
+7. Generar `docs/ponytail-review.md` con score A-F
+
+**Checkpoint asociado:** `checkpoint_ponytail` — presenta resultados y pregunta plan de acción:
+- Corregir ahora → lanza `phase_5_5_1_corrections` (sub-fase automática)
+- Documentar y continuar → pasa el reporte al PR phase
+- Ignorar → acepta deuda técnica
+
+`exit_check: static`. Archivo de salida: `docs/ponytail-review.md`.
+
+---
+
+## Phase 5.7: Pull Request + Merge
+
+**Lee `prompts/phase_5_7_pull_request.md`**.
+Automatiza la creación del PR con toda la información del pipeline y maneja el merge.
+
+Responsabilidades:
+1. Detectar rama base automáticamente (HEAD remoto → AGENTS.md → fallback "main")
+2. Confirmar con question() — permite override manual
+3. Preguntar antes de hacer push de los cambios
+4. Recolectar artefactos del pipeline para el cuerpo del PR:
+   - CHANGELOG_LOGICO.md → descripción
+   - ponytail-review.md → quality badge
+   - qa-report.md → QA status
+   - phase_3_coding.json → archivos, tests, cobertura
+5. Generar PR via `gh pr create` con labels automáticos
+6. Fallback: generar `docs/pr-body.md` si gh CLI no está disponible
+7. Preguntar por merge (squash / merge commit / manual)
+
+**Checkpoints inline:** Las preguntas de confirmación (base branch, push antes de merge) se hacen dentro del mismo phase mediante `question()`, sin checkpoint separado.
 
 ---
 

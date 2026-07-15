@@ -63,7 +63,7 @@ Desde el repo principal (si existe):
   "change_type": "feature",
   "phase_order": ["phase_1_analyze", "checkpoint_1", "phase_3_coding", "checkpoint_3", "phase_6_report"],
   "current_index": 0,
-  "deep_model": "orquestador-deep",
+  "agent_override": null,
   "worktree": {
     "name": "{name}",
     "path": "/path/absoluto/worktrees/{name}",

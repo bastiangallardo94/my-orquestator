@@ -18,21 +18,67 @@ LEE:
 - .orquestador/context.md → contexto del pipeline
 - docs/Plan_Backend.md y/o docs/Plan_Frontend.md → criterios de aceptación
 - docs/openapi.yaml → contratos
+- docs/risk-assessment.md → risk classification (si existe, generado por phase_3_7)
 - AGENTS.md → comandos de test
 
 ============================================================
 ## VALIDACIONES (siempre)
 ============================================================
 
-### 1. TRAZABILIDAD Requisito → Test → Resultado
+### 0. CARGA DE RISK ASSESSMENT (RBT)
+
+Si `docs/risk-assessment.md` existe:
+1. Parsear la matriz de riesgo: CRITICAL → HIGH → MEDIUM → LOW
+2. Identificar los tests con tag FAIL_FAST (CRITICAL y HIGH)
+3. Identificar tests LOW que pueden sampled o skipped si hay restricción de tiempo
+4. NOTA: `change_type == "bug_fix"` eleva todos los tests del flujo tocado +1 nivel de riesgo
+
+El orden de ejecución de TODOS los tests en este phase respeta:
+```
+1. 🔴 CRITICAL (fail fast — si falla alguno, abortar)
+2. 🟠 HIGH
+3. 🟡 MEDIUM
+4. 🟢 LOW (samplear si > 20, ejecutar solo 20% aleatorio)
+```
+
+Si `docs/risk-assessment.md` NO existe:
+- Ejecutar sin priorización (orden normal)
+- Reportar "RBT: NO DISPONIBLE"
+
+### 1. TRAZABILIDAD OpenSpec → Test → Resultado
+
+Los artefactos OpenSpec (phase_1_5) definen los escenarios formales que el código
+debe satisfacer. Esta es la traza principal.
+
+1. `Glob openspec/changes/*/specs/**` → leer todos los specs del cambio activo
+2. Para cada Requirement, extraer sus Scenarios (Given/When/Then)
+3. Leer `.orquestador/phases/phase_3_coding.json` → OPENSPEC_TRACEABILITY y TESTS_POST_GROUP
+4. Para cada Scenario, verificar:
+   - ¿Tiene un test que lo cubre? (según phase_3_coding.json)
+   - ¿Ese test pasa? (según TESTS_POST_GROUP)
+5. Reportar:
+
+```markdown
+## Trazabilidad OpenSpec → Test → Resultado
+
+| Requirement | Escenario | Test | Resultado |
+|------------|-----------|------|-----------|
+| User Auth | Login válido → JWT | TestLoginSuccess | PASS |
+| User Auth | Login inválido → 401 | TestLoginInvalid | PASS |
+| Session Exp | Timeout → reinvalidar | TestSessionExpiry | FAIL |
+
+**Spec Coverage:** N/M escenarios cubiertos (X%)
+```
+
+### 1.b TRAZABILIDAD Plan → Test → Resultado (complementaria)
 Parsear `docs/Plan_Backend.md` y `docs/Plan_Frontend.md`.
-Extraer cada línea `- [ ] Test: [descripcion]` — esa es tu lista de requisitos.
+Extraer cada línea `- [ ] Test: [descripcion]` — esa es tu lista de requisitos planificados.
 
 Para cada test del plan:
 1. Busca el resultado en phase_3_coding.json (TESTS_POST_GROUP)
 2. Reporta PASS | FAIL | NO_ENCONTRADO para cada uno
 
-**Cobertura de trazabilidad:** N/M tests del plan ejecutados (X%)
+**Cobertura de trazabilidad (plan):** N/M tests del plan ejecutados (X%)
 
 ### 2. TESTING API via REST Tester (automático)
 Si `tools_detected.rest_tester.available == true` en `.orquestador/_pointer.json`:
@@ -86,20 +132,36 @@ Si `codebase_project` disponible y hay impacto no anticipado:
 ============================================================
 
 ### Si change_type == "feature":
-5. E2E COMPLETOS:
+5. E2E COMPLETOS (ordenados por riesgo si RBT disponible):
    - Verificar que tests/*.spec.ts existen (generados por phase_3_coding)
-   - Ejecutar: `npx playwright test --reporter=list`
+   - Si `docs/risk-assessment.md` existe:
+     - Ordenar specs por nivel de riesgo: CRITICAL → HIGH → MEDIUM → LOW
+     - Ejecutar en batches:
+       ```bash
+       npx playwright test tests/ --reporter=list --grep "CRITICAL"
+       # Si FAIL → abortar, reportar FAILED_TESTS
+       npx playwright test tests/ --reporter=list --grep "HIGH"
+       npx playwright test tests/ --reporter=list --grep "MEDIUM"
+       # LOW: samplear si > 20
+       npx playwright test tests/ --reporter=list --grep "LOW"
+       ```
+   - Si NO hay risk-assessment:
+     - Ejecutar: `npx playwright test --reporter=list`
    - Verificar que todos pasan
-   - Si falla alguno → reportar en FAILED_TESTS
+   - Si falla alguno CRITICAL → abortar inmediatamente, reportar FAILED_TESTS
 
 ### Si change_type == "bug_fix":
-5. E2E REGRESIÓN + FLUJO TOCADO:
+5. E2E REGRESIÓN + FLUJO TOCADO (priorizado por riesgo):
    - Verificar que specs/regression-*.md existen
-   - Ejecutar tests de regresión: `npx playwright test tests/regression-*.spec.ts`
-   - Verificar que specs/[flujo-tocado].md existe
-   - Ejecutar tests del flujo tocado: `npx playwright test tests/[flujo-tocado].*.spec.ts`
+   - Si `docs/risk-assessment.md` existe:
+     - Tests de regresión se filtran por nivel CRITICAL+HIGH+MEDIUM
+     - Tests LOW del flujo tocado se omiten a menos que fallen los HIGH
+   - Si NO hay risk-assessment:
+     - Ejecutar regresión completa + flujo tocado
+   - Comando: `npx playwright test tests/regression-*.spec.ts tests/[flujo-tocado].*.spec.ts`
    - NO ejecutar todos los E2E (solo regresión + flujo tocado)
-   - Si falla alguno → reportar en FAILED_TESTS
+   - Si falla alguno CRITICAL → abortar inmediatamente
+   - Reportar resultados en FAILED_TESTS
 
 ============================================================
 ## REPORTE
@@ -112,13 +174,21 @@ Crea docs/qa-report.md con:
 **Change Type:** [feature | bug_fix]
 **Resultado:** SUCCESS / FAILED (intento N/3)
 
-## Trazabilidad Requisito → Test → Resultado
+## Trazabilidad OpenSpec → Test → Resultado
+| Requirement | Escenario | Test | Resultado |
+|------------|-----------|------|-----------|
+| User Auth | Login válido → JWT | usecase_test.go:TestLoginSuccess | PASS |
+| User Auth | Login inválido → 401 | usecase_test.go:TestLoginInvalid | FAIL |
+
+**Spec Coverage:** N/M escenarios OpenSpec cubiertos (X%)
+
+## Trazabilidad Plan → Test → Resultado
 | # | Requisito (del Plan) | Test | Resultado |
 |---|---------------------|------|-----------|
 | 1 | Retornar éxito cuando condición | usecase_test.go:TestSuccess | PASS |
 | 2 | Error si inválido | usecase_test.go:TestInvalid | FAIL |
 
-**Cobertura de trazabilidad:** N/M tests del plan ejecutados (X%)
+**Cobertura de trazabilidad (plan):** N/M tests del plan ejecutados (X%)
 
 ## Testing API (REST Tester)
 - Server: [nombre del MCP server o "NO_DISPONIBLE"]
@@ -134,10 +204,17 @@ Crea docs/qa-report.md con:
 - ⚠️ Impacto no anticipado: [lista o "ninguno"]
 - Estado: CONFIRMADO | DIVERGENTE | NO_DISPONIBLE
 
+## Risk-Based Test Execution (RBT)
+- Estado: ACTIVO / NO DISPONIBLE
+- Risk Distribution: 🔴 CRITICAL N / 🟠 HIGH N / 🟡 MEDIUM N / 🟢 LOW N
+- Fail-fast activado: SÍ / NO
+- Sampling LOW: SÍ (20%) / NO
+- Orden de ejecución: CRITICAL → HIGH → MEDIUM → LOW
+
 ## Tests E2E
 - change_type: [feature | bug_fix]
-- Tests ejecutados: [todos / regresión + flujo tocado]
-- Orden de ejecución por blast radius: [spec → razón] o "sin priorización"
+- Tests ejecutados: [todos / regresión + flujo tocado / sampling]
+- Orden de ejecución por risk: [risk_assessment.md] o "sin priorización (RBT no disponible)"
 - Resultados: [PASS/FAIL]
 
 ## Resumen
@@ -154,9 +231,15 @@ Incluye los escenarios ejecutados, cobertura y trazabilidad. No publiques en Con
 
 DEVUELVEME:
 - QA_STATUS: SUCCESS | FAILED
+- OPENSPEC_SPEC_COVERAGE: N/M escenarios cubiertos (X%)
+- OPENSPEC_SCENARIOS_NOT_COVERED: [lista de scenarios sin test, vacío si ninguno]
 - TRACEABILITY_COVERAGE: N/M tests del plan ejecutados
 - FAILED_TESTS: [ids de tests que fallaron, vacío si ninguno]
 - IMPACTO_NO_ANTICIPADO: [lista o "ninguno" o "NO_DISPONIBLE"]
-- E2E_SCOPE: [todos | regresión + flujo-tocado]
-- E2E_PRIORITY_ORDER: [spec → razón] o "sin priorización"
+- RBT_STATUS: ACTIVO | NO_DISPONIBLE
+- RBT_DISTRIBUTION: { "CRITICAL": N, "HIGH": N, "MEDIUM": N, "LOW": N } (o "N/A")
+- RBT_FAIL_FAST_TRIGGERED: true | false (si un CRITICAL falló y se abortó)
+- RBT_LOW_SAMPLING: N tests sampled (0 si no aplica)
+- E2E_SCOPE: [todos | regresión + flujo-tocado | sampling]
+- E2E_PRIORITY_ORDER: [risk_assessment.md] o "sin priorización (RBT no disponible)"
 - E2E_PASSING: N/Total

@@ -8,7 +8,7 @@ Este módulo se lee solo si el orquestador detecta que perdió contexto por comp
 
 Si detectas que no tienes memoria de turnos anteriores (el contexto fue compactado por OpenCode):
 
-1. **Read `.orquestador/_pointer.json`** → recuperas estado completo del pipeline (flow, impact, phase_order, current_index, deep_model, codebase_project, tools_detected)
+1. **Read `.orquestador/_pointer.json`** → recuperas estado completo del pipeline (flow, impact, phase_order, current_index, agent_override, codebase_project, tools_detected)
 
 2. **Read `.orquestador/context.md`** → recuperas contexto relevante (plan de archivos, estado por fase, contexto relevante de la última fase exitosa)
 

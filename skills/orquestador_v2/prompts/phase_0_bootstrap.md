@@ -109,14 +109,75 @@ Si `ORQUESTADOR_OFFSITE=true` después del paso 1.1.6:
 - Si existe y está completo → archivar a `history/{timestamp}/` antes de continuar
 - Si no existe → continuar con bootstrap
 
-### 1.4 Health check MCP
+### 1.4 Health check MCP + codebase-memory-mcp auto-config
 - Derivar project name desde `cwd`: `cwd.replace(/^\//, '').replace(/\//g, '-')`
 - `codebase-memory-mcp_list_projects()` → si el project name derivado está en la lista, usarlo
 - Si no está en la lista, intentar con el project name derivado (puede que no esté indexado aún)
 - `codebase-memory-mcp_index_status(project=<derived_project_name>)` con timeout 5s
 - Si responde → MCP vivo
 - Si timeout o error de proyecto → intentar con `list_projects` para verificar otros proyectos, `mcp_available: true` (el MCP está vivo, solo el proyecto no está indexado)
-- Si `list_projects` también falla → `mcp_available: false`, continuar sin grafo
+- Si `list_projects` también falla → `mcp_available: false`
+
+**Auto-install de codebase-memory-mcp (si no está disponible):**
+1. Si `mcp_available == false`:
+   - Buscar `opencode.json` en `cwd` o `~/.config/opencode/opencode.json`
+   - Verificar si `codebase-memory-mcp` ya está declarado en `mcpServers`
+   - Si no está: preguntar con `question()`:
+     ```
+     ┌─────────────────────────────────────────────────────────┐
+     │ codebase-memory-mcp no está configurado.                │
+     │ Este servidor permite búsqueda semántica de código,     │
+     │ análisis de impacto y trazabilidad.                     │
+     │                                                         │
+     │ ¿Deseas instalarlo ahora?                               │
+     └─────────────────────────────────────────────────────────┘
+     Opciones: ["Sí, instalar ahora (Recommended)", "No, continuar sin él (modo degradado)"]
+     ```
+   - Si "Sí": agregar entrada a `opencode.json`:
+     ```json
+     "mcpServers": {
+       "codebase-memory-mcp": {
+         "command": "npx",
+         "args": ["@anomalyco/codebase-memory-mcp"]
+       }
+     }
+     ```
+   - Informar al usuario que reinicie opencode para activar el cambio
+2. Si `mcp_available == true`:
+   - Verificar que el proyecto esté indexado (si no, se indexa en paso 3.1)
+
+### 1.4.5 Health check OpenSpec + auto-install
+
+OpenSpec (`@fission-ai/openspec`) es **OBLIGATORIO** para el pipeline. Proporciona la capa de especificaciones formales (specs, proposal, design, tasks) antes de codificar.
+
+```
+1. Verificar si openspec está instalado globalmente:
+   which openspec || npx openspec --version
+
+2. Si NO está instalado:
+   a. Mostrar: "ℹ️ OpenSpec no está instalado. Instalando..."
+   b. npm install -g @fission-ai/openspec@latest
+   c. Si falla: preguntar con question():
+      ┌─────────────────────────────────────────────────────────┐
+      │ OpenSpec es obligatorio para el pipeline.               │
+      │ Instalación automática falló.                           │
+      │                                                         │
+      │ ¿Cómo proceder?                                        │
+      └─────────────────────────────────────────────────────────┘
+      Opciones: [
+        "Reintentar instalación",
+        "Instalar con pnpm (global)",
+        "Instalar con bun (global)",
+        "Abortar pipeline (instala manualmente: npm i -g @fission-ai/openspec)"
+      ]
+
+3. Si está instalado:
+   a. openspec --version → guardar en openspec_available
+   b. Verificar si openspec/ existe en el proyecto:
+      - Si no existe: ejecutar openspec init (responde automáticamente defaults)
+      - Si existe: ejecutar openspec update (refrescar skills/commands)
+   c. Guardar openspec_available = true, openspec_init = true en _pointer.json
+```
 
 ### 1.5 Inferencia de impacto
 - Si `codebase_project` disponible: `codebase-memory-mcp_get_architecture(project)` → languages, layers, packages
@@ -214,11 +275,11 @@ question(questions=[
     // Solo si skip_tipo_cambio == false
   },
   {
-    question: "¿Qué tipo de subagente usar para fases deep?",
-    header: "Subagente deep",
+    question: "¿Qué tipo de subagente usar para TODO el pipeline?",
+    header: "Modelo de subagente",
     options: [
-      "orquestador-deep (Recomendado — análisis profundo, planificación, codificación TDD)",
-      "orquestador-fast (rápido — QA, playwright, reporting)"
+      "orquestador-deep (Recomendado — análisis profundo, planos detallados, código de mejor calidad, pero más lento)",
+      "orquestador-fast (más rápido — menor latencia, ideal para iteraciones rápidas, calidad aceptable)"
     ]
   }
 ])

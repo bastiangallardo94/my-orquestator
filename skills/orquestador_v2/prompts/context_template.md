@@ -2,7 +2,7 @@
 
 **Flow:** {FLOW} | **Impact:** {IMPACT} | **Project:** {codebase_project}
 **MCP:** {available|unavailable} | **Tools:** bd={X} rest={Y} codegen={Z}
-**Deep Model:** {deep_model} | **Created:** {created_at}
+**Agent Override:** {agent_override} | **Created:** {created_at}
 
 ## Plan de Archivos
 {lista compacta: ruta (NEW|MODIFY) — máximo 20 archivos, agrupados por capa}

@@ -2,8 +2,8 @@
 phase_id: phase_2_backend
 type: agent
 agent: orquestador-deep
-entry_condition: "docs/CHANGELOG_LOGICO.md debe existir"
-hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/openapi.yaml, AGENTS.md]
+entry_condition: "docs/CHANGELOG_LOGICO.md debe existir y openspec/changes/*/proposal.md debe existir"
+hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/openapi.yaml, AGENTS.md, openspec/changes/*/specs/**, openspec/changes/*/tasks.md]
 exit_check: static
 exit_files: [docs/Plan_Backend.md]
 supports_partial_retry: false
@@ -11,6 +11,32 @@ max_retries: 3
 ---
 
 # Phase 2 BACKEND — Planificación Técnica
+
+## Input: OpenSpec Specs
+
+Antes de escribir el plan, lee los artefactos OpenSpec generados en phase_1_5:
+
+1. `Glob openspec/changes/*/specs/**` → specs del cambio (requirements + scenarios)
+2. `Glob openspec/changes/*/tasks.md` → tareas de implementación
+3. `Glob openspec/changes/*/design.md` → esbozo de diseño técnico
+4. `Glob openspec/changes/*/proposal.md` → contexto del cambio
+
+Para cada Requirement en los specs, identifica:
+- ¿Qué capas arquitectónicas backend toca? (API/application/domain/infrastructure)
+- ¿Qué escenarios (Given/When/Then) deben ser verificables por tests de backend?
+- ¿Qué archivos nuevos o modificaciones implica?
+
+**Salida de trazabilidad:** el Plan_Backend.md debe incluir una sección que trace cada Requirement de OpenSpec a los tests que lo cubrirán:
+
+```markdown
+## Trazabilidad OpenSpec → Tests Backend
+
+| Requirement | Escenario | Test Planificado | Capa |
+|------------|-----------|-----------------|------|
+| User Authentication | Login válido → JWT | usecase_test.go:TestLoginSuccess | Application |
+| User Authentication | Login inválido → 401 | usecase_test.go:TestLoginInvalid | Application |
+| Session Expiration | Timeout 30min → reinvalidar | middleware_test.go:TestSessionExpiry | API |
+```
 
 ## Consulta de Patrones Probados (antes de escribir el plan)
 1. `Read ~/.config/opencode/knowledge/registry.json` → buscar patrones backend
