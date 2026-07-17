@@ -10,10 +10,13 @@ description: Sincroniza la skill orquestador_v2 local al repo Git y hace push. C
    - Si no hay diff → "Skill ya está al día. Nada que subir."
    - Si hay diff → continuar
 
-2. **COPIAR al repo**:
+2. **COPIAR al repo** (estructura jerárquica — incluye core/, phases/, flows/):
    ```
    cp -r ~/.config/opencode/skills/orquestador_v2/SKILL.md ~/my-orquestator/skills/orquestador_v2/
-   cp -r ~/.config/opencode/skills/orquestador_v2/prompts/* ~/my-orquestator/skills/orquestador_v2/prompts/
+   cp -r ~/.config/opencode/skills/orquestador_v2/prompts/ ~/my-orquestator/skills/orquestador_v2/prompts/
+   cp -r ~/.config/opencode/skills/orquestador_v2/bin/ ~/my-orquestator/skills/orquestador_v2/bin/
+   cp -r ~/.config/opencode/skills/orquestador_v2/skills/ ~/my-orquestator/skills/orquestador_v2/skills/
+   cp -r ~/.config/opencode/skills/orquestador_v2/planner_front.md ~/my-orquestator/skills/orquestador_v2/
    ```
 
 3. **GIT STATUS**: `git status --short` en ~/my-orquestator/

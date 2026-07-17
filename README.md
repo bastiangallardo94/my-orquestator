@@ -15,26 +15,32 @@ A deterministic TDD orchestration pipeline for [OpenCode](https://opencode.ai). 
 - Supports parallel execution for fullstack (backend + frontend) work
 - Integrates with `codebase-memory-mcp` for code-aware analysis
 
-## Pipeline Overview
+## Pipeline Overview (v3 — Optimized)
 
-| Phase | Description | Agent |
-|-------|-------------|-------|
-| Phase 0 | Bootstrap + MCP detection | orquestador |
-| Phase 0.5 | Validate architecture maps | deep |
-| Phase 1 | Business analysis + CHANGELOG_LOGICO | deep |
-| Checkpoint 1 | Approve analysis | — |
-| Phase 2 Backend | Technical plan (TDD) | deep |
-| Phase 2 Frontend | Technical plan (TDD) | deep |
-| Phase 2.5 | Playwright E2E plan | fast |
-| Phase 2.7 | Plan Integrity Check (PIC) | fast |
-| Phase 2.8 | Dependency analysis | fast |
-| Phase 3 | Coding (TDD: RED→GREEN→VALIDATE) | fast (sub-deep) |
-| Phase 3.5 | Code review | fast |
-| Checkpoint 3 | Approve coding | — |
-| Phase 4 | QA + testing | fast |
-| Checkpoint 4 | Approve QA | — |
-| Phase 5 | Documentation | fast |
-| Phase 6 | Final report | — |
+The pipeline was restructured from **17 to 11 phases** and **7 to 5 checkpoints** by:
+- Merging risk assessment (3.7) → QA (4)
+- Merging telemetry (4.5) → Report (6)
+- Merging conflict detection (2.8) → PIC (2.5)
+- Merging code review (3.5) + Ponytail review (5.5) → Coding (3)
+- Centralizing Engram memory management (10 blocks → 1 protocol)
+- Simplifying OpenSpec artifacts (5 → 2 per change)
+
+| # | Phase | Description | Agent |
+|---|-------|-------------|-------|
+| 0 | Bootstrap | Warm init + MCP detection | orquestador |
+| 0.5 | Validate maps | Architecture map validation | deep |
+| | *checkpoint_maps* | *Auto-approve if coverage ≥ 80%* | — |
+| 1 | Analyze + OpenSpec | Business analysis → CHANGELOG_LOGICO.md + formal specs | deep |
+| | *checkpoint_1* | *Approve analysis + specs* | — |
+| 2 | Backend + Frontend plans | Technical plans (TDD, parallel if fullstack) | deep |
+| 2.5 | PIC + Conflicts | Plan Integrity Check + dependency groups + conflict detection | fast |
+| | *checkpoint_2* | *Auto-approve if PIC PASS* | — |
+| 3 | Coding + Review | TDD (RED→GREEN→VALIDATE) + code review + Ponytail quality inline | fast |
+| | *checkpoint_3* | *Approve coding* | — |
+| 4 | QA + Risk Assess | Risk-based testing, API/DB audit, E2E | fast |
+| | *checkpoint_4* | *Approve QA* | — |
+| 5 | Docs (COMPLETO only) | Technical docs | fast |
+| 6 | Report + Telemetry | Final report + pipeline metrics inline | orquestador |
 
 ## Triggers
 
@@ -101,7 +107,7 @@ Agents are defined in `agents/` with full permission granularity. Deep and fast 
 ## Skills Included
 
 ### Core (Orchestration)
-- `orquestador_v2` — Main TDD pipeline (15+ phases)
+- `orquestador_v2` — Main TDD pipeline (11 phases, 5 checkpoints, 2.8K lines)
 - `coder_agent` — Senior Software Engineer (Ponytail Mode)
 - `backend_planner` — Backend architecture (Hexagonal + TDD)
 - `doc_publisher` — Technical documentation publisher
@@ -147,7 +153,19 @@ my-orquestator/
 │   └── prompts/
 │       ├── orquestador-deep-system.md
 │       └── orquestador-fast-system.md
-├── skills/                  # 20+ skills
+├── skills/
+│   ├── orquestador_v2/          # Main TDD pipeline (11 phases)
+│   │   ├── SKILL.md
+│   │   ├── bin/init.md          # Cold init script
+│   │   ├── planner_front.md
+│   │   ├── prompts/
+│   │   │   ├── core/            # Shared protocols (Engram, search, checkpoints, patterns)
+│   │   │   ├── phases/          # Phase definitions (11 files)
+│   │   │   └── flows/           # Specialized flows (bugfix, review, test, unit-test)
+│   │   └── skills/              # Sub-skills loaded on demand (offsite, worktree)
+│   ├── coder_agent/
+│   ├── backend_planner/
+│   └── ...                      # 15+ catalog skills
 ├── commands/                # 5 ponytail commands
 ├── tools/                   # 3 custom tools
 ├── rules/                   # Orchestration rules
@@ -162,28 +180,50 @@ User: "orquesta: add filter by date to reports"
   ↓
 orquestador.md loads skill orquestador_v2
   ↓
-Phase 0: Detect flow (TACTICO), impact (BACKEND), MCP availability
+Phase 0: Warm bootstrap (trigger, health check, confirm)
   ↓
-Phase 0.5: Validate architecture maps
+Phase 0.5: Validate architecture maps → api-surface.md
   ↓
-Phase 1: Analyze business requirements → CHANGELOG_LOGICO.md
+checkpoint_maps (auto-approve if ≥80% coverage)
   ↓
-Checkpoint 1: "Is the analysis correct?" [question]
+Phase 1: Analyze + OpenSpec specs → CHANGELOG_LOGICO.md + proposal.md
   ↓
-Phase 2: Generate technical plan → Plan_Backend.md
+checkpoint_1: "Analysis + specs correct?" [question]
   ↓
-Checkpoint 2: "Approve plan for coding?" [question]
+Phase 2 Backend + Frontend (parallel): Plans → Plan_Backend.md, Plan_Frontend.md
   ↓
-Phase 3: TDD coding (RED → GREEN → VALIDATE per file)
+Phase 2.5: PIC + Conflict Detection → dependency-groups.json
   ↓
-Phase 3.5: Code review + lint + compile check
+checkpoint_2 (auto-approve if PIC PASS)
   ↓
-Checkpoint 3: "Approve for QA?" [question]
+Phase 3: TDD coding + inline review + Ponytail quality checks
   ↓
-Phase 4: Run tests, verify coverage
+checkpoint_3: "Approve for QA?" [question]
   ↓
-Phase 6: Final report
+Phase 4: Risk-based QA + API/DB audit + E2E
+  ↓
+checkpoint_4: "Approve QA?" [question]
+  ↓
+Phase 6: Report + telemetry (inline) → archive
 ```
+
+## What's New in v3
+
+The orquestador_v2 skill was restructured in July 2026 with these key optimizations:
+
+| Metric | v2 | v3 | Change |
+|--------|:---:|:---:|:------:|
+| Total lines | 8,159 | 2,800 | **-66%** |
+| Phase files | 17 | 11 | **-6 phases** |
+| Checkpoints | 7 | 5 | **-2 checkpoints** |
+| SKILL.md | ~500 lines | 210 lines | **-58%** |
+
+**Key changes:**
+- **Engram centralizado**: 10 duplicated `mem_save` blocks → 1 protocol in `prompts/core/engram_protocol.md`
+- **Phase mergers**: 3.7→4 (risk), 4.5→6 (telemetry), 2.8→2.7 (conflicts), 3.5→3 (review), 5.5→3 (ponytail)
+- **OpenSpec simplificado**: only `proposal.md` + `specs/` per change (removed `design.md`, `tasks.md`)
+- **Offsite/Worktree**: moved to sub-skills under `skills/`, loaded on demand
+- **Phase 0**: reduced from 378 to 120 lines (cold init separated to `bin/init.md`)
 
 ## Requirements
 

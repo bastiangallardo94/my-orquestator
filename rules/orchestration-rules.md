@@ -5,14 +5,33 @@
 El pipeline de `orquestador_v2` incluye validación automática de mapas de arquitectura:
 
 ```
-Phase 0 (bootstrap MCP + detección repos)
+Phase 0 (warm bootstrap: trigger, health check, confirm)
     ↓
 Phase 0.5 (validar mapas: YAML → verificar vs código indexado)
     ↓
-checkpoint_maps (por cada gap: preguntar resolución al usuario)
+checkpoint_maps (auto-approve si coverage ≥80%, si no pregunta cada gap)
     ↓
-Phase 1b / 1_tactico (análisis con api-surface.md activo)
-    ...
+Phase 1 (análisis de negocio + generación OpenSpec specs)
+    ↓
+checkpoint_1 (HITL: ¿lógica de negocio correcta?)
+    ↓
+Phase 2 Backend + Frontend (planes técnicos TDD, paralelos si fullstack)
+    ↓
+Phase 2.5 PIC+Conflictos (Plan Integrity Check + detección de conflictos cross-pipeline)
+    ↓
+checkpoint_2 (auto-approve si PIC PASS)
+    ↓
+Phase 3 (codificación TDD + code review + ponytail quality inline)
+    ↓
+checkpoint_3 (HITL: ¿apruebas codificación?)
+    ↓
+Phase 4 (QA con risk-based testing + API/BD audit + E2E)
+    ↓
+checkpoint_4 (HITL: ¿apruebas QA?)
+    ↓
+Phase 5 (documentación técnica, solo COMPLETO)
+    ↓
+Phase 6 (reporte final + telemetría, inline)
 ```
 
 ## API Surface Map
