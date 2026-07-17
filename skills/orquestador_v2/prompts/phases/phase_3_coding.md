@@ -41,6 +41,17 @@ Lee estos archivos del skill coder_agent:
 4. Si hay template → usar como base
 
 ============================================================
+## CONTEXT7 — LIBRARY DOCUMENTATION (si disponible)
+============================================================
+Si el subagente necesita usar APIs de librerias/frameworks (React hooks, TanStack Query, Prisma, Express, etc.):
+1. Usa `mcp__context7__resolve-library-id` para resolver la libreria
+2. Usa `mcp__context7__query-docs` para obtener documentacion actualizada
+3. Antepon "use context7" en prompts de task() para librerias desconocidas
+4. NO confies en conocimiento de entrenamiento para APIs de librerias — Context7 da la version exacta
+
+Nota: Context7 no siempre esta disponible. Si falla, proceder con el conocimiento existente.
+
+============================================================
 ## OPENSPEC — TDD CONTRA ESCENARIOS FORMALES
 ============================================================
 Cada Scenario en los specs DEBE tener un test. Cobertura obligatoria: 100%.

@@ -229,6 +229,7 @@ The orquestador_v2 skill was restructured in July 2026 with these key optimizati
 
 - [OpenCode](https://opencode.ai) v1.0+
 - [codebase-memory-mcp](https://github.com/nicobailon/codebase-memory-mcp) (optional, for code graph)
+- [Context7](https://context7.com) (optional, for up-to-date library docs) — `npx ctx7 setup --opencode`
 - An LLM provider configured in OpenCode (OpenAI, Anthropic, etc.)
 
 ## License

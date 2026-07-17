@@ -15,6 +15,12 @@
     },
     "backend-api-qa": {
       "enabled": true
+    },
+    "context7": {
+      "enabled": true,
+      "type": "local",
+      "command": ["npx", "ctx7", "mcp"],
+      "description": "Up-to-date library docs for LLMs — reduces hallucinated APIs"
     }
   },
   "plugin": [
