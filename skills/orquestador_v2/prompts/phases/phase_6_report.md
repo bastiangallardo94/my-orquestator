@@ -18,7 +18,7 @@ Esta fase la ejecuta el orquestador directamente (no se delega a subagente).
 ## STEP 0: PIPELINE TELEMETRY (inline, antes del reporte)
 ============================================================
 
-Lee TODOS `.orquestador/phases/*.json` y compila metricas:
+Lee `.orquestador/state.yaml` → phases{} y compila metricas:
 
 ### A. Duracion
 Para cada fase: `duration = completed_at - started_at`
@@ -26,15 +26,15 @@ Total: sum(duration) de todas las fases
 
 ### B. Metricas de Codigo
 - Archivos creados/modificados: sum de todas las fases
-- Tests totales: de phase_3_coding.json
-- Cobertura: de phase_3_coding.json
+- Tests totales: de state.phases.phase_3_coding (si existe)
+- Cobertura: de state.phases.phase_3_coding
 - Compilacion: OK / FAILED
-- Code Review Score: de phase_3_coding.json (si existe)
+- Code Review Score: de state.phases.phase_3_coding (si existe)
 
 ### C. Quality & Risk
-- RBT Distribution: de phase_4_qa.json
-- QA Status: de phase_4_qa.json
-- OpenSpec Coverage: de phase_4_qa.json
+- RBT Distribution: de state.phases.phase_4_qa
+- QA Status: de state.phases.phase_4_qa
+- Scenario Coverage: de state.phases.phase_4_qa (SCENARIO_COVERAGE)
 
 ### D. Efficiency Score (0-100)
 ```
@@ -55,26 +55,15 @@ Si existe pipeline anterior en `.orquestador/history/`:
 ============================================================
 ## STEP 1: GATHER PHASE DATA
 ============================================================
-1. Glob .orquestador/phases/*.json → lee TODOS
+1. `state(projectPath=cwd)` → lee state.yaml → phases{}
 2. Extrae por fase: id, status, retries, started_at, completed_at, files_created, files_modified, files_skipped
 3. Calcula duracion por fase
 
 ============================================================
-## STEP 2: OPENSPEC ARCHIVE (si aplica)
-============================================================
-Si openspec_available == true en _pointer.json:
-1. Leer openspec/changes/*/specs/ → delta specs del cambio activo
-2. Mergear deltas a openspec/specs/:
-   - ADDED → agregar al spec global
-   - MODIFIED → reemplazar en spec global
-   - REMOVED → eliminar del spec global
-3. openspec archive (o mv manual a archive/)
-
-============================================================
-## STEP 3: GENERATE REPORT (inline)
+## STEP 2: GENERATE REPORT (inline)
 ============================================================
 
-Usa la plantilla segun POINTER.flow. Rellena con datos reales de phases/*.json.
+Usa la plantilla segun state.flow. Rellena con datos reales de state.phases{}.
 
 ### Plantilla TACTICO:
 ```
@@ -91,7 +80,6 @@ Checkpoint 4 (QA):             {✅ | ❌}
 
 Artefactos:
   📄 CHANGELOG_LOGICO.md
-  📄 openspec/changes/*/proposal.md
   📄 Plan_Backend.md / Plan_Frontend.md
   📄 qa-report.md
 
@@ -126,17 +114,15 @@ Resumen: {N}/{M} fases exitosas, {R} reintentos totales.
 ```
 
 ============================================================
-## STEP 4: ENGRAM (centralized — see core/engram_protocol.md)
+## STEP 3: ENGRAM (delegado a protocolo centralizado)
 ============================================================
-1. Guardar resumen del pipeline como learning
-2. Guardar decisiones arquitectonicas consolidadas como decision
-3. Guardar patrones descubiertos como pattern
-4. mem_session_summary + mem_session_end
+Seguir prompts/core/engram_protocol.md → Session Lifecycle (Phase 6).
+NO dupliques pasos aqui — el protocolo centralizado es la unica fuente de verdad.
 
 ============================================================
-## STEP 5: CLEANUP
+## STEP 4: CLEANUP
 ============================================================
-1. Write .orquestador/phases/phase_6_report.json status=SUCCESS
-2. Archivar .orquestador/ a .orquestador/history/{timestamp}/
+1. Actualizar state.phases.phase_6_report.status=SUCCESS via state tool
+2. Archivar .orquestador/ a .orquestador/history/{timestamp}/ via cleanup tool
 3. TodoWrite: todos marcados completed
 4. Presentar reporte inline al usuario

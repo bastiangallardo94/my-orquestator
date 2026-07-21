@@ -1,0 +1,488 @@
+# Phase Templates — Reglas declarativas para generar phase_order dinámicamente
+# Reemplaza la Tabla Maestra hardcodeada de SKILL.md
+# Evaluado por: orquestador-plugin.mjs → orchestrator-phase-order
+
+version: "2.0"
+description: Fase templates para orquestador_v2
+
+# ============================================================================
+# Tipos de fase
+# ============================================================================
+phase_types:
+  agent:
+    token_estimate: 8000
+    requires_checkpoint_after: true
+  checkpoint:
+    token_estimate: 3000
+    requires_hitl: true
+  report:
+    token_estimate: 2000
+    inline: true
+
+# ============================================================================
+# Metadatos de cada fase (frontmatter)
+# ============================================================================
+phases:
+  phase_0_5_validate_maps:
+    type: agent
+    agent: orquestador-deep
+    entry_condition: "codebase-memory-mcp disponible"
+    hash_inputs: [AGENTS.md, .orquestador/service-map.yaml]
+    exit_check: static
+    exit_files: [.orquestador/api-surface.md]
+    supports_partial_retry: false
+    max_retries: 2
+
+  checkpoint_maps:
+    type: checkpoint
+    auto_approve_if: "coverage.bff_to_backend.pct >= 80 && coverage.frontend_to_bff.pct >= 80"
+
+  phase_1_analyze:
+    type: agent
+    agent: orquestador-deep
+    entry_condition: "true"
+    hash_inputs: [docs/CHANGELOG_LOGICO.md, AGENTS.md]
+    exit_check: static
+    exit_files: [docs/CHANGELOG_LOGICO.md]
+    supports_partial_retry: false
+    max_retries: 2
+
+  phase_0_bootstrap:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "true"
+    hash_inputs: [AGENTS.md]
+    exit_check: static
+    exit_files: [.orquestador/state.yaml]
+    supports_partial_retry: false
+    max_retries: 1
+
+  checkpoint_1:
+    type: checkpoint
+
+  phase_2_backend:
+    type: agent
+    agent: orquestador-deep
+    entry_condition: "phase_1_analyze SUCCESS"
+    hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/openapi.yaml, AGENTS.md]
+    exit_check: static
+    exit_files: [docs/Plan_Backend.md]
+    supports_partial_retry: false
+    max_retries: 3
+
+  phase_2_frontend:
+    type: agent
+    agent: orquestador-deep
+    entry_condition: "phase_1_analyze SUCCESS"
+    hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/openapi.yaml, AGENTS.md]
+    exit_check: static
+    exit_files: [docs/Plan_Frontend.md]
+    supports_partial_retry: false
+    max_retries: 3
+
+  phase_2_5_playwright:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "phase_2_frontend SUCCESS (si frontend)"
+    hash_inputs: [docs/Plan_Frontend.md]
+    exit_check: static
+    exit_files: []
+    supports_partial_retry: false
+    max_retries: 2
+
+  checkpoint_2:
+    type: checkpoint
+    auto_approve_if: "pic_status == PASS && warnings == 0 && no SUCCESS_WITH_WARNINGS"
+
+  phase_2_7_pic_deps:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "checkpoint_2 APPROVED"
+    hash_inputs: [docs/Plan_Backend.md, docs/Plan_Frontend.md]
+    exit_check: static
+    exit_files: [.orquestador/dependency-groups.yaml]
+    supports_partial_retry: false
+    max_retries: 2
+
+  phase_2_8_conflict_detection:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "phase_2_7 SUCCESS"
+    hash_inputs: []
+    exit_check: none
+    exit_files: [docs/conflict-report.md]
+    supports_partial_retry: false
+    max_retries: 2
+
+  phase_3_coding:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "Plan_Backend.md o Plan_Frontend.md existe"
+    hash_inputs: [docs/Plan_Backend.md, docs/Plan_Frontend.md, docs/CHANGELOG_LOGICO.md]
+    exit_check: verify_reported_files
+    exit_files: []
+    supports_partial_retry: true
+    max_retries: 3
+
+  phase_3_5_review:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "phase_3_coding SUCCESS"
+    hash_inputs: []
+    exit_check: none
+    exit_files: [docs/code-review-report.md]
+    supports_partial_retry: false
+    max_retries: 1
+
+  checkpoint_3:
+    type: checkpoint
+    show_real_data: true
+    metrics: [files, tests, coverage, compile, lint, cr_score]
+
+  phase_3_7_risk_assessment:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "checkpoint_3 APPROVED"
+    hash_inputs: []
+    exit_check: static
+    exit_files: [docs/risk-assessment.md]
+    supports_partial_retry: false
+    max_retries: 2
+
+  phase_4_qa:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "checkpoint_3 APPROVED o phase_3_7 SUCCESS"
+    hash_inputs: [docs/CHANGELOG_LOGICO.md]
+    exit_check: none
+    exit_files: [docs/qa-report.md]
+    supports_partial_retry: false
+    max_retries: 2
+
+  checkpoint_4:
+    type: checkpoint
+
+  phase_4_5_telemetry:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "phase_4_qa SUCCESS"
+    exit_check: static
+    exit_files: [docs/pipeline-telemetry.md]
+    supports_partial_retry: false
+    max_retries: 1
+
+  phase_5_5_ponytail_review:
+    type: agent
+    agent: orquestador-deep
+    entry_condition: "checkpoint_4 APPROVED"
+    exit_check: static
+    exit_files: [docs/ponytail-review.md]
+    supports_partial_retry: false
+    max_retries: 2
+
+  checkpoint_ponytail:
+    type: checkpoint
+    options: [corregir_ahora, documentar_y_continuar, ignorar]
+
+  phase_5_7_pull_request:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "docs/ponytail-review.md existe"
+    hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/ponytail-review.md, docs/qa-report.md]
+    exit_check: none
+    exit_files: []
+    supports_partial_retry: false
+    max_retries: 2
+
+  phase_5_docs:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "phase_5_7 SUCCESS"
+    exit_check: none
+    exit_files: []
+    supports_partial_retry: false
+    max_retries: 2
+
+  phase_6_report:
+    type: report
+
+  checkpoint_review:
+    type: checkpoint
+    options: [ejecutar_correcciones, solo_documentar, descartar]
+
+  checkpoint_test:
+    type: checkpoint
+    options: [ejecutar_tests, documentar_gaps, descartar]
+
+  # ============================================================================
+  # Bugfix phases
+  # ============================================================================
+  phase_bugfix_analyze:
+    type: agent
+    agent: orquestador-deep
+    entry_condition: "checkpoint git existe"
+    exit_check: static
+    exit_files: [docs/bugfix-analysis.md]
+    max_retries: 3
+
+  checkpoint_bugfix_analyze:
+    type: checkpoint
+    options: [continuar_fix, iterar_analyze, cerrar]
+
+  phase_bugfix_fix:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "checkpoint_bugfix_analyze APPROVED"
+    exit_check: verify
+    exit_files: [docs/bugfix-fix.md]
+    max_retries: 3
+
+  phase_bugfix_revalidate:
+    type: agent
+    agent: orquestador-fast
+    entry_condition: "phase_bugfix_fix SUCCESS"
+    exit_check: static
+    exit_files: [docs/bugfix-results.md]
+    max_retries: 2
+
+  checkpoint_bugfix:
+    type: checkpoint
+    options: [aprobar, iterar_fix, descartar]
+
+  # ============================================================================
+  # Unit test phases
+  # ============================================================================
+  phase_ut_1:
+    type: agent
+    agent: orquestador-fast
+    exit_check: static
+    exit_files: [docs/coverage-history.md]
+    max_retries: 3
+
+  checkpoint_ut_coverage:
+    type: checkpoint
+
+  phase_ut_2:
+    type: agent
+    agent: orquestador-fast
+    exit_check: none
+    max_retries: 3
+
+  phase_ut_3:
+    type: agent
+    agent: orquestador-fast
+    exit_check: none
+    max_retries: 3
+
+  checkpoint_unit_test_loop:
+    type: checkpoint
+    logic: "coverage_actual >= target ? APPROVED : (aumento >= 8 ? LOOP : STOPPED)"
+
+  phase_ut_report:
+    type: report
+
+# ============================================================================
+# Flow definitions
+# ============================================================================
+flows:
+  # ==============================
+  # COMPLETO (con Jira)
+  # ==============================
+  COMPLETO:
+    always:
+      - phase_0_5_validate_maps
+      - checkpoint_maps
+      - phase_1_analyze
+      - phase_1_5_openspec
+      - checkpoint_1_5
+      - checkpoint_1
+
+    if_frontend:
+      - phase_2_frontend
+      - phase_2_5_playwright
+
+    if_backend:
+      - phase_2_backend
+
+    if_fullstack: []
+
+    if_feature:
+      - phase_2_5_playwright
+      - checkpoint_2
+      - phase_2_7_pic_deps
+      - phase_2_8_conflict_detection
+      - phase_3_coding
+      - phase_3_5_review
+      - checkpoint_3
+      - phase_3_7_risk_assessment
+      - phase_4_qa
+      - checkpoint_4
+      - phase_4_5_telemetry
+      - phase_5_5_ponytail_review
+      - checkpoint_ponytail
+      - phase_5_7_pull_request
+      - phase_5_docs
+      - phase_6_report
+
+    if_refactor:
+      - checkpoint_2
+      - phase_3_coding
+      - phase_3_5_review
+      - checkpoint_3
+      - phase_5_5_ponytail_review
+      - checkpoint_ponytail
+      - phase_5_7_pull_request
+      - phase_6_report
+
+  # ==============================
+  # TACTICO (sin Jira)
+  # ==============================
+  TACTICO:
+    always:
+      - phase_0_5_validate_maps
+      - checkpoint_maps
+      - phase_1_analyze
+      - phase_1_5_openspec
+      - checkpoint_1_5
+      - checkpoint_1
+
+    if_frontend:
+      - phase_2_frontend
+
+    if_backend:
+      - phase_2_backend
+
+    if_fullstack: []
+
+    if_feature:
+      - phase_2_5_playwright
+      - checkpoint_2
+      - phase_2_7_pic_deps
+      - phase_2_8_conflict_detection
+      - phase_3_coding
+      - phase_3_5_review
+      - checkpoint_3
+      - phase_3_7_risk_assessment
+      - phase_4_qa
+      - checkpoint_4
+      - phase_4_5_telemetry
+      - phase_5_5_ponytail_review
+      - checkpoint_ponytail
+      - phase_5_7_pull_request
+      - phase_6_report
+
+    if_refactor:
+      - checkpoint_2
+      - phase_3_coding
+      - phase_3_5_review
+      - checkpoint_3
+      - phase_5_5_ponytail_review
+      - checkpoint_ponytail
+      - phase_5_7_pull_request
+      - phase_6_report
+
+  # ==============================
+  # DRY_RUN (solo análisis)
+  # ==============================
+  DRY_RUN:
+    always:
+      - phase_1_analyze
+      - checkpoint_1
+      - phase_6_report
+
+    if_feature: []
+    if_refactor: []
+
+  # ==============================
+  # REVIEW (standalone)
+  # ==============================
+  REVIEW:
+    phases:
+      - phase_3_5_review
+      - checkpoint_review
+
+  # ==============================
+  # TEST (standalone)
+  # ==============================
+  TEST:
+    phases:
+      - phase_4_qa
+      - checkpoint_test
+
+  # ==============================
+  # REFACTOR
+  # ==============================
+  REFACTOR:
+    always:
+      - phase_0_5_validate_maps
+      - checkpoint_maps
+      - phase_1_analyze
+      - phase_1_5_openspec
+      - checkpoint_1_5
+      - checkpoint_1
+
+    if_feature: []
+    if_frontend:
+      - phase_2_frontend
+
+    if_backend:
+      - phase_2_backend
+
+    if_fullstack: []
+
+    if_refactor:
+      - checkpoint_2
+      - phase_3_coding
+      - phase_3_5_review
+      - checkpoint_3
+      - phase_5_5_ponytail_review
+      - checkpoint_ponytail
+      - phase_5_7_pull_request
+      - phase_6_report
+
+  # ==============================
+  # BUGFIX_TACTICO
+  # ==============================
+  BUGFIX_TACTICO:
+    phases:
+      - phase_bugfix_analyze
+      - checkpoint_bugfix_analyze
+      - phase_bugfix_fix
+      - phase_bugfix_revalidate
+      - checkpoint_bugfix
+
+  # ==============================
+  # UNIT_TEST
+  # ==============================
+  UNIT_TEST:
+    loop:
+      phase: phase_ut_1
+      checkpoint: checkpoint_unit_test_loop
+      until: coverage >= target
+    phases:
+      - phase_ut_1
+      - checkpoint_ut_coverage
+      - phase_ut_2
+      - phase_ut_3
+      - checkpoint_unit_test_loop
+      - phase_ut_report
+
+# ============================================================================
+# Batch definitions (para micro-batches #3)
+# ============================================================================
+batches:
+  phase_2_7_8:
+    phases: [phase_2_7_pic_deps, phase_2_8_conflict_detection]
+    condition: always
+    reason: "Ambos son análisis sin mutación de código"
+
+  phase_4_combo:
+    phases: [phase_4_qa, phase_4_5_telemetry]
+    condition: always
+    reason: "QA + telemetría, secuencia natural"
+
+  phase_2_par:
+    phases: [phase_2_backend, phase_2_frontend]
+    condition: impact == FULLSTACK
+    parallel: true
+    reason: "Backend y frontend en paralelo"

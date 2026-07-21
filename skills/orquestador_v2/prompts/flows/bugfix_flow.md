@@ -13,6 +13,17 @@ max_retries: 2
 
 Usado para recovery desde checkpoint. El pipeline anterior fue SUCCESS pero lo desplegado provoco un bug.
 
+Ponytail activo via system prompt. Escalera concreta:
+
+```
+ANTES DE CODIFICAR EL FIX, sube la escalera:
+1. ¿El bug es sintoma de algo mas profundo? → busca causa raiz con trace_path
+2. ¿Ya existe un fix en el codebase (commit revertido)? → reusa, no reescribas
+3. ¿Lo resuelve una config flag o feature toggle? → usalo
+4. ¿Puede ser una linea? → hazlo una linea
+5. Solo entonces: fix completo con tests
+```
+
 ## Phase B1: Bugfix Analyze
 1. Encontrar ultimo checkpoint git: `git tag --list 'checkpoint-*' --sort=-version:refname`
 2. Preguntar al usuario: "Bug ocurrio despues del checkpoint {X}. Usar ese diff?"

@@ -3,6 +3,17 @@
 Trigger: `unit-test: [target%]`
 Flow: UNIT_TEST
 
+Ponytail activo via system prompt. Escalera concreta:
+
+```
+ANTES DE GENERAR TESTS, sube la escalera:
+1. ¿El codigo ya tiene cobertura aceptable? → target alcanzado, detente
+2. ¿Los tests necesarios ya existen? → solo ejecuta, no generes
+3. ¿Lo cubre un test de integracion existente? → no dupliques con unit
+4. ¿Puede ser un test parametrizado (table-driven)? → hazlo una tabla
+5. Solo entonces: genera tests nuevos
+```
+
 ## Phase U1: Generate Tests
 1. Analizar cobertura actual
 2. Generar tests para archivos sin cobertura

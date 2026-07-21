@@ -2,7 +2,7 @@
 
 ## Flujo de detección
 1. Al inicio de Phase 0: `list_mcp_resources()` → detectar servers disponibles
-2. Guardar en `_pointer.json.tools_detected`
+2. Guardar en `state.yaml.tools_detected`
 3. Cada fase lee `tools_detected` y usa las herramientas automáticamente
 
 ## Mapeo de herramientas por fase
@@ -19,7 +19,7 @@
 1. NUNCA preguntar si quiere usar una herramienta → usarla automáticamente
 2. Si falla → fallback silencio (no bloquear pipeline)
 3. Si no está disponible → saltar sin informar
-4. Leer `tools_detected` de `_pointer.json` al inicio de cada fase
+4. Leer `tools_detected` de `state.yaml` al inicio de cada fase
 
 ## Detección por nombre de server
 
@@ -35,7 +35,7 @@
 ### phase_1_analyze
 ```
 ## AUDITORÍA BD (automática)
-Si tools_detected.bd_mcp.available == true en _pointer.json:
+Si tools_detected.bd_mcp.available == true en state.yaml:
   - Usar el MCP server de BD para listar tablas y columnas relevantes
   - Si el cambio menciona entidades → consultar BD automáticamente
   - Guardar resultado en RAW_BD_SCHEMA
@@ -56,7 +56,7 @@ Si no disponible → usar Glob/Read como fallback
 ### phase_4_qa
 ```
 ## TESTING API (automático)
-Si tools_detected.rest_tester.available == true en _pointer.json:
+Si tools_detected.rest_tester.available == true en state.yaml:
   - Usar backend-api-qa para probar endpoints creados
   - GET/POST/PUT/DELETE contra endpoints del openapi.yaml
   - Verificar responses coinciden con schemas

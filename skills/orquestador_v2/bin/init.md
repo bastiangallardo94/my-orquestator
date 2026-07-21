@@ -17,22 +17,16 @@ npx @anomalyco/codebase-memory-mcp --version
 # }
 ```
 
-## 2. Instalar OpenSpec (si no existe)
-```bash
-npm install -g @fission-ai/openspec@latest
-openspec --version
-```
-
-## 3. Crear Knowledge Base
+## 2. Crear Knowledge Base
 ```bash
 mkdir -p ~/.config/opencode/knowledge/{patterns,anti-patterns,templates}
 echo '{"version":"1.0","patterns":[],"anti_patterns":[],"templates":[]}' > ~/.config/opencode/knowledge/registry.json
 ```
 
-## 4. Verificar Engram
+## 3. Verificar Engram
 Engram se configura en opencode.json. Si no esta disponible, el pipeline funciona sin el.
 
-## 5. Verificar Slack Bridge (opcional — solo para modo offsite)
+## 4. Verificar Slack Bridge (opcional — solo para modo offsite)
 Si usas --offsite, configurar slack-bridge en opencode.json:
 ```json
 "mcpServers": {

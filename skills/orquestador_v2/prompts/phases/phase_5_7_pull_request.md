@@ -15,10 +15,10 @@ max_retries: 2
 Automatiza la creacion del PR con toda la informacion del pipeline.
 
 ## Inputs
-1. .orquestador/_pointer.json → flow, change_type
-2. .orquestador/phases/phase_3_coding.json → files, tests, coverage
-3. .orquestador/phases/phase_4_qa.json → QA_STATUS, RBT
-4. .orquestador/phases/phase_6_report.json → telemetry metrics
+1. .orquestador/state.yaml → flow, change_type
+2. state(projectPath=cwd) → state.phases.phase_3_coding → files, tests, coverage
+3. state(projectPath=cwd) → state.phases.phase_4_qa → QA_STATUS, RBT
+4. state(projectPath=cwd) → state.phases.phase_6_report → telemetry metrics
 5. docs/CHANGELOG_LOGICO.md → descripcion del cambio
 
 ## Steps
@@ -35,3 +35,9 @@ Automatiza la creacion del PR con toda la informacion del pipeline.
 7. Preguntar merge: squash / merge commit / manual
 
 (Memoria Engram: no es necesario aqui — la pipeline ya persistio en phase_6)
+
+## Post-Deploy Smoke (opcional, no bloquea el PR)
+Una vez mergeado y desplegado, el equipo puede ejecutar:
+- BACKEND: curl -f http://<host>/health o el health endpoint del servicio
+- FRONTEND: npx playwright test tests/smoke-*.spec.ts --reporter=list
+- Documentar resultado como comentario en el PR si hay anomalias

@@ -1,0 +1,162 @@
+# [DEPRECATED] Phase Generation Rules — v3.5
+# This file is preserved for reference only.
+# The authoritative phase rules are in prompts/phase_templates.yaml.
+# The phase-order tool reads from phase_templates.yaml, NOT this file.
+# Entry conditions here may conflict with phase_templates.yaml.
+
+base_phases:
+  - id: phase_0_bootstrap
+    type: report
+    audience: orquestador
+    flows: [COMPLETO, TACTICO, DRY_RUN, REVIEW, TEST, REFACTOR, BUGFIX_TACTICO, UNIT_TEST]
+    template: phase_0_bootstrap.md
+
+  - id: phase_0_5_validate_maps
+    type: agent
+    agent: deep
+    flows: [COMPLETO, TACTICO, REFACTOR, BUGFIX_TACTICO]
+    template: phase_0_5_validate_maps.md
+
+  - id: checkpoint_maps
+    type: checkpoint
+    flows: [COMPLETO, TACTICO, REFACTOR, BUGFIX_TACTICO]
+    condition: auto_approve_coverage >= 80
+
+  - id: phase_1_analyze
+    type: agent
+    agent: deep
+    flows: [COMPLETO, TACTICO, DRY_RUN, REFACTOR, BUGFIX_TACTICO]
+    template: phase_1_analyze.md
+
+  - id: checkpoint_1
+    type: checkpoint
+    flows: [COMPLETO, TACTICO, DRY_RUN, REFACTOR, BUGFIX_TACTICO]
+
+flow_specific:
+  COMPLETO:
+    phases:
+      - phase_2_backend
+      - phase_2_frontend
+    after: checkpoint_1
+    before: phase_2_7_pic_deps
+    parallel: [phase_2_backend, phase_2_frontend]
+
+  TACTICO:
+    phases:
+      - phase_2_backend
+      - phase_2_frontend
+    after: checkpoint_1
+    before: phase_2_7_pic_deps
+    parallel: [phase_2_backend, phase_2_frontend]
+
+  REFACTOR:
+    phases:
+      - phase_2_backend
+      - phase_2_frontend
+    after: checkpoint_1
+    before: phase_2_7_pic_deps
+    parallel: [phase_2_backend, phase_2_frontend]
+
+  DRY_RUN:
+    phases: []
+    # Only phase_1_analyze + checkpoint_1 + report
+
+always_after_planning:
+  - id: phase_2_7_pic_deps
+    type: agent
+    agent: fast
+    flows: [COMPLETO, TACTICO, REFACTOR, BUGFIX_TACTICO]
+    template: phase_2_7_pic_deps.md
+    entry_condition: "Al menos un plan existe"
+
+  - id: checkpoint_2
+    type: checkpoint
+    flows: [COMPLETO, TACTICO, REFACTOR, BUGFIX_TACTICO]
+    condition: auto_approve_pic_pass
+
+  - id: phase_3_coding
+    type: agent
+    agent: fast
+    flows: [COMPLETO, TACTICO, REFACTOR, BUGFIX_TACTICO]
+    template: phase_3_coding.md
+    entry_condition: "checkpoint_2 APPROVED"
+
+  - id: checkpoint_3
+    type: checkpoint
+    flows: [COMPLETO, TACTICO, REFACTOR, BUGFIX_TACTICO]
+
+  - id: phase_4_qa
+    type: agent
+    agent: fast
+    flows: [COMPLETO, TACTICO, BUGFIX_TACTICO]
+    template: phase_4_qa.md
+    entry_condition: "checkpoint_3 APPROVED"
+
+  - id: checkpoint_4
+    type: checkpoint
+    flows: [COMPLETO, TACTICO, BUGFIX_TACTICO]
+
+  - id: phase_5_7_pull_request
+    type: agent
+    agent: fast
+    flows: [COMPLETO, TACTICO, REFACTOR, BUGFIX_TACTICO]
+    template: phase_5_7_pull_request.md
+    entry_condition: "checkpoint_4 APPROVED"
+
+  - id: phase_6_report
+    type: report
+    flows: [COMPLETO, TACTICO, DRY_RUN, REVIEW, TEST, REFACTOR, BUGFIX_TACTICO, UNIT_TEST]
+    template: phase_6_report.md
+
+optional:
+  - id: phase_5_docs
+    type: agent
+    agent: fast
+    flows: [COMPLETO]
+    template: phase_5_docs.md
+    entry_condition: "Solo COMPLETO"
+
+# Standalone flows (no standard pipeline)
+standalone_flows:
+  REVIEW:
+    template: flows/review_standalone.md
+    phases: [phase_review, checkpoint_review]
+  TEST:
+    template: flows/test_standalone.md
+    phases: [phase_test, checkpoint_test]
+  BUGFIX_TACTICO:
+    template: flows/bugfix_flow.md
+    phases: [B1, B2, B3, B4, B5]
+  UNIT_TEST:
+    template: flows/unit_test_loop.md
+    phases: [U1, U2, U3, U4, U5, U6]
+
+# Impact filtering: phases that include/exclude by impact
+impact_filters:
+  BACKEND:
+    include: [phase_2_backend]
+    exclude: [phase_2_frontend]
+  FRONTEND:
+    include: [phase_2_frontend]
+    exclude: [phase_2_backend]
+  FULLSTACK:
+    include: [phase_2_backend, phase_2_frontend]
+    exclude: []
+
+# Phase metadata (frontmatter equivalent for phases without individual prompts)
+phase_metadata:
+  phase_2_backend:
+    agent: deep
+    entry_condition: "checkpoint_1 APPROVED"
+    hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/openapi.yaml, AGENTS.md]
+    exit_check: static
+    exit_files: [docs/Plan_Backend.md]
+    max_retries: 3
+
+  phase_2_frontend:
+    agent: deep
+    entry_condition: "checkpoint_1 APPROVED"
+    hash_inputs: [docs/CHANGELOG_LOGICO.md, docs/openapi.yaml, AGENTS.md]
+    exit_check: static
+    exit_files: [docs/Plan_Frontend.md]
+    max_retries: 3

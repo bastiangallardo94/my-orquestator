@@ -4,7 +4,7 @@ Activado SOLO cuando `--offsite` esta presente en el trigger.
 Cargado bajo demanda — no agregar al SKILL.md principal.
 
 ## Activacion
-Detectado en Phase 0 Bootstrap: si `user_request` contiene `--offsite`, guardar `offsite: true` en `_pointer.json`.
+Detectado en Phase 0 Bootstrap: si `user_request` contiene `--offsite`, guardar `offsite: true` en `state.yaml`.
 
 ## Requisitos
 MCP server `slack-bridge` debe estar habilitado en opencode.json.
@@ -14,7 +14,7 @@ MCP server `slack-bridge` debe estar habilitado en opencode.json.
 Cuando `offsite: true`, CADA llamada a question() se enruta a Slack:
 
 ```
-1. Leer _pointer.json → offsite flag
+1. Leer state.yaml → offsite flag
 2. Si offsite == true:
    a. PREGUNTA CON OPCIONES:
       slack_bridge_ask_question(q_id, title, summary, question, options, allow_custom, project_name)

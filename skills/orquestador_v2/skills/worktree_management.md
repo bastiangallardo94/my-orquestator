@@ -31,12 +31,12 @@ Cada worktree tiene su propio .orquestador/ aislado.
 ### workflow:create
 1. git worktree add worktrees/<name> feature/<name>
 2. Crear .orquestador/ en el worktree
-3. Copiar shared files (api-surface.md, dependency-groups.json)
+3. Copiar shared files (api-surface.md, dependency-groups.yaml)
 4. Iniciar pipeline TACTICO
 
 ### workflow:list
 - Ejecutar git worktree list --porcelain
-- Por cada worktree, detectar .orquestador/_pointer.json
+- Por cada worktree, detectar .orquestador/state.yaml
 - Si tiene: flow, phase actual, status
 - Si no: "sin pipeline"
 - Generar tabla de resumen
@@ -51,11 +51,11 @@ En Phase 0 Bootstrap, detectar si estamos en worktree:
 - git rev-parse --is-inside-work-tree
 - git worktree list --porcelain
 - Si es worktree: mostrar "📍 Worktree: {name} | Rama: {branch}"
-- Guardar en _pointer.json.worktree
+- Guardar en state.yaml.worktree
 
 ## Shared Files
 - api-surface.md
-- dependency-groups.json
+- dependency-groups.yaml
 - config-map.yaml
 
 Se sincronizan con `worktree:sync` (desde repo principal a worktrees).

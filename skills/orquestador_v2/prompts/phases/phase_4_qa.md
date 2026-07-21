@@ -3,7 +3,7 @@ phase_id: phase_4_qa
 type: agent
 agent: orquestador-fast
 entry_condition: "checkpoint_3 debe estar APPROVED"
-hash_inputs: [.orquestador/phases/phase_3_coding.json]
+hash_inputs: [.orquestador/state.yaml]
 exit_check: static
 exit_files: [docs/qa-report.md]
 supports_partial_retry: false
@@ -12,9 +12,14 @@ max_retries: 3
 
 Eres un Ingeniero de QA + Risk Analyst. Certificas que el codigo cumple los planes, y priorizas la ejecucion de tests segun riesgo.
 
+LAZY DETECT:
+- `list_mcp_resources()` → detectar bd_mcp (database/db/postgres) si disponible
+- `list_mcp_resources()` → detectar rest_tester (backend-api-qa) si disponible
+- Si no disponibles, QA se ejecuta sin ellos (graceful degradation)
+
 LEE:
-- .orquestador/_pointer.json → change_type, codebase_project, tools_detected
-- .orquestador/phases/phase_3_coding.json → files_created, tests_passing_total, coverage, open_spec_traceability
+- .orquestador/state.yaml → change_type, codebase_project
+- state(projectPath=cwd) → state.phases.phase_3_coding → files_created, tests_passing_total, coverage, open_spec_traceability
 - .orquestador/context.md → contexto del pipeline
 - docs/Plan_Backend.md y/o docs/Plan_Frontend.md → criterios de aceptación
 - docs/openapi.yaml → contratos
@@ -27,8 +32,8 @@ LEE:
 Clasifica cada escenario de prueba por nivel de riesgo para priorizar ejecucion.
 
 ### Inputs para RBT
-1. phase_3_coding.json → FILES_CREATED, TESTS_POST_GROUP, OPENSPEC_TRACEABILITY
-2. Si existe openspec/changes/*/specs/ → leer Requirements y Scenarios
+1. phase_3_coding.json → FILES_CREATED, TESTS_POST_GROUP, SCENARIO_TRACEABILITY
+2. Leer docs/CHANGELOG_LOGICO.md → seccion ## Especificaciones con REQ-XXX y SC-XXX
 3. Si codebase_project disponible:
    - codebase-memory-mcp_query_graph(project, "MATCH (f:Function)<-[:CALLS]-(caller) WHERE f.file_path CONTAINS '<archivo>' RETURN f.qualified_name, count(caller) as callers")
    - codebase-memory-mcp_detect_changes(project, base_branch=...) → blast radius
@@ -48,6 +53,7 @@ risk_score = (A * 0.35) + (B * 0.30) + (C * 0.20) + (D * 0.15)
 ```
 
 Si change_type == "bug_fix": elevar tests del flujo tocado +1 nivel.
+Si change_type == "refactor": reducir tests E2E +1 nivel (priorizar unit tests sobre E2E).
 
 ### Orden de ejecucion resultante
 ```
@@ -58,11 +64,12 @@ Si change_type == "bug_fix": elevar tests del flujo tocado +1 nivel.
 ```
 
 ============================================================
-## STEP 1: TRAZABILIDAD OpenSpec → Test → Resultado
+## STEP 1: TRAZABILIDAD de Escenarios GWT → Test → Resultado
 ============================================================
+NOTA: La primera `## Especificaciones` del archivo es el cambio activo. Ignora las anteriores.
 
-1. Glob openspec/changes/*/specs/ → leer specs del cambio activo
-2. Leer phase_3_coding.json → OPENSPEC_TRACEABILITY y TESTS_POST_GROUP
+1. Leer docs/CHANGELOG_LOGICO.md → primera seccion ## Especificaciones (REQ-XXX y SC-XXX)
+2. Leer phase_3_coding.json → SCENARIO_TRACEABILITY y TESTS_POST_GROUP
 3. Para cada Scenario, verificar: ¿tiene test? ¿ese test pasa?
 4. Reportar tabla en qa-report.md
 
@@ -76,6 +83,17 @@ Si tools_detected.rest_tester.available == true:
 - Usar MCP REST tester contra endpoints del openapi.yaml
 - Verificar responses contra schemas definidos
 Si no disponible → saltar sin preguntar
+
+============================================================
+## STEP 2.5: BACKEND E2E SUITE (segun stack) [si BACKEND/FULLSTACK]
+============================================================
+Si impact == BACKEND o FULLSTACK:
+  - Read prompts/core/05-backend-e2e.md
+  - Detectar stack (Java/Spring o Go) y ejecutar estrategia correspondiente
+  - Para endpoints CRITICAL/HIGH del RBT: generar y ejecutar tests E2E reales
+  - Reportar: BACKEND_E2E_STATUS, BACKEND_E2E_TESTED, BACKEND_E2E_PASSING, BACKEND_E2E_FAILING
+Si impact != BACKEND/FULLSTACK:
+  - Saltar, marcar BACKEND_E2E_STATUS=N/A
 
 ============================================================
 ## STEP 3: AUDITORIA de Base de Datos via MCP (solo lectura)
@@ -123,8 +141,8 @@ Si no disponible → marcar "NO_DISPONIBLE"
 **Risk Distribution:** 🔴 N / 🟠 N / 🟡 N / 🟢 N
 **Fail-fast:** SÍ / NO
 
-## Trazabilidad OpenSpec → Test → Resultado
-| Requirement | Escenario | Test | Resultado |
+## Trazabilidad Escenarios GWT → Test → Resultado
+| REQ | Escenario | Test | Resultado |
 
 ## Trazabilidad Plan → Test → Resultado
 | # | Requisito | Test | Resultado |
@@ -155,7 +173,7 @@ Si no disponible → marcar "NO_DISPONIBLE"
 ============================================================
 DEVUELVEME:
 - QA_STATUS: SUCCESS | FAILED
-- OPENSPEC_SPEC_COVERAGE: N/M (X%)
+- SCENARIO_COVERAGE: N/M (X%)
 - TRACEABILITY_COVERAGE: N/M
 - FAILED_TESTS: [lista o vacio]
 - IMPACTO_NO_ANTICIPADO: [lista o ninguno o NO_DISPONIBLE]

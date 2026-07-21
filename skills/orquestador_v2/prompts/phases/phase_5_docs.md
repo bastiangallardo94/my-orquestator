@@ -18,9 +18,9 @@ Genera documentacion incremental del sistema.
 1. docs/CHANGELOG_LOGICO.md → descripcion del cambio
 2. docs/Plan_Backend.md / Plan_Frontend.md → plan implementado
 3. docs/openapi.yaml → contratos de API
-4. .orquestador/phases/phase_3_coding.json → archivos creados
-5. .orquestador/phases/phase_4_qa.json → resultados QA
+4. state(projectPath=cwd) → state.phases.phase_3_coding → archivos creados
 
+5. state(projectPath=cwd) → state.phases.phase_4_qa → resultados QA
 ## Output
 - docs/technical/README.md — consolidado
 - docs/technical/api.md — endpoints actualizados

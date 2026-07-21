@@ -41,7 +41,7 @@ SIEMPRE usar codebase-memory-mcp como primera opcion. Glob/grep es fallback SOLO
    D) METRICAS:
       query_graph(project, "MATCH (f:Function) WHERE f.file_path CONTAINS 'X' RETURN ...")
 
-3. Siempre verificar codebase_project en _pointer.json antes de llamar MCP.
+3. Siempre verificar codebase_project en state.yaml antes de llamar MCP.
 ```
 
 ## FALLBACK (cuando MCP no disponible o 0 resultados)

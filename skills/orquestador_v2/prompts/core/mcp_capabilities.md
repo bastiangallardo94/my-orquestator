@@ -18,7 +18,7 @@ Este modulo define como detectar y usar las capabilities de los MCP servers.
 
 ## Cache de capabilities
 
-Guardado en `.orquestador/_pointer.json` bajo `tools_detected`:
+Guardado en `.orquestador/state.yaml` bajo `tools_detected`:
 
 ```json
 {
@@ -61,7 +61,7 @@ Guardado en `.orquestador/_pointer.json` bajo `tools_detected`:
 ## Health check por fase
 
 Antes de cada fase que use MCP:
-1. Leer `tools_detected` de `_pointer.json`
+1. Leer `tools_detected` de `state.yaml`
 2. Si `last_check` > 5 minutos -> re-ejecutar health check rapido (timeout 2s)
 3. Si falla -> actualizar `available: false`
 4. Si cambia -> informar al usuario: "⚠️ MCP {server} caido, usando fallback"
@@ -73,7 +73,7 @@ Antes de cada fase que use MCP:
 ### phase_1_analyze
 ```
 ## AUDITORIA BD (automatica)
-Si tools_detected.bd_mcp.available == true en _pointer.json:
+Si tools_detected.bd_mcp.available == true en state.yaml:
   - Usar el MCP server de BD para listar tablas y columnas relevantes
   - Si el cambio menciona entidades -> consultar BD automaticamente
   - Guardar resultado en RAW_BD_SCHEMA
@@ -94,7 +94,7 @@ Si no disponible -> usar Glob/Read como fallback
 ### phase_4_qa
 ```
 ## TESTING API (automatico)
-Si tools_detected.rest_tester.available == true en _pointer.json:
+Si tools_detected.rest_tester.available == true en state.yaml:
   - Usar backend-api-qa para probar endpoints creados
   - GET/POST/PUT/DELETE contra endpoints del openapi.yaml
   - Verificar responses coinciden con schemas

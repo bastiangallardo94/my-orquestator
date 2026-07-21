@@ -36,37 +36,23 @@ Ejecutar UNA VEZ al inicio. NO incluye cold-init (auto-installs, KB creation —
 Si user_request contiene `--offsite` → extraerlo, leer skills/offsite_slack.md para health check.
 SINO → continuar sin offsite.
 
-### 1.3 Resume detection
-orquestador-state(project_path=cwd):
-- Si pipeline activo incompleto → leer context.md, saltar a Protocolo de Bucle
-- Si completo → archivar a history/ antes de continuar
-- Si no existe → continuar
+### 1.3 Quick Health Check (saltado si SKILL.md ya resumio pipeline)
+Lanza EN PARALELO (4 calls concurrentes, NO secuencial):
 
-### 1.4 Quick Health Check
-```
-1. codebase-memory-mcp_list_projects() → detectar projecto
-   - Si responde → mcp_available=true, project = matched
-   - Si no → mcp_available=false, codebase_project=NO_DISPONIBLE
+1. `project-cache(projectPath=cwd, mode=read)` → cache hit?
+   - Si hit fresco → project = project_name, mcp_available = cached, **saltar list_projects()**
+   - Si miss o stale → `codebase-memory-mcp_list_projects()` + `project-cache(projectPath=cwd, mode=write, projectName=matched, mcpAvailable=true)`
 
-2. Buscar herramientas MCP (list_mcp_resources):
-   - database/db/postgres → bd_mcp
-   - backend-api-qa → rest_tester
-   - Guardar en tools_detected
-
-3. Verificar Engram:
-   - Si hay tools mem_* → engram_available=true
+2. `mem_context()` → verificar Engram disponible:
+   - Si responde → engram_available=true
    - Si no → engram_available=false
 
-4. Verificar OpenSpec:
-   - which openspec || npx openspec --version
-   - Si no instalado → question() "instalar ahora? (recomendado) / continuar sin openspec"
-   - Si instalado → openspec_available=true
-```
+3. [EN PARALELO con 1/2] Impact Inference:
+   - Si codebase_project disponible: get_architecture(project) → languages, layers
+   - Si no: Glob rapido de carpetas (api/, frontend/, internal/)
+   - BACKEND | FRONTEND | FULLSTACK
 
-### 1.5 Impact Inference
-- Si codebase_project disponible: get_architecture(project) → languages, layers
-- Si no: Glob rapido de carpetas (api/, frontend/, internal/)
-- BACKEND (Go/Java) | FRONTEND (React/Angular) | FULLSTACK (ambos)
+Recolectar resultados cuando todos respondan. Si alguno falla → graceful degradation, NO bloquear.
 
 ============================================================
 ## STEP 2: CONFIRM (single question)
@@ -100,19 +86,19 @@ Excepciones por trigger:
 - Si mcp_available=true y proyecto no indexado → index_repository(repo_path=cwd, mode="fast")
 - Si falla → codebase_project=NO_DISPONIBLE, continuar sin grafo
 
-### 3.2 Build phase_order
-Filtrar Tabla Maestra del SKILL.md segun flow+impact.
+### 3.2 Build phase_order + state_yaml (un solo paso)
+- `phase-order(projectPath=cwd)` → recibe `{phase_order, state_yaml}`
+- `state_yaml` ya incluye TODAS las fases pre-rellenas como PENDING
 
-### 3.3 Write initial state
-- Write .orquestador/_pointer.json (incluye offsite flag, engram_session_id si engram disponible)
-- Write .orquestador/phases/<cada id>.json status=PENDING
-- Write .orquestador/summary.md inicial
-- Write .orquestador/context.md desde prompts/core/context_template.md
+### 3.3 Write initial state (escritura atomica)
+- **Escribir `state_yaml` completo a `.orquestador/state.yaml` (UN SOLO WRITE)**
+- Write `.orquestador/summary.md` desde `state_yaml`
+- Write `.orquestador/context.md` desde `prompts/core/context_template.md`
 - TodoWrite con un item por fase
-- Agregar .orquestador/ a .gitignore si no existe
+- Ejecutar `gitignore-add(projectPath=cwd, entries=[".orquestador/"])`
 
 ### 3.4 Engram Session Start (si engram_available)
-mem_session_start(directory=cwd) → guardar session_id en _pointer.json
+mem_session_start(directory=cwd) → guardar session_id en state.yaml
 
 ============================================================
 ## STEP 4: CONTINUE TO BUCLE LOOP

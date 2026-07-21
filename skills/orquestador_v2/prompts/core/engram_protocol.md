@@ -26,8 +26,7 @@ Save is triggered by PHASE.type + status, not by inline blocks:
 | Event | Types to save | Source data |
 |-------|---------------|-------------|
 | phase_1_analyze SUCCESS | discovery, architecture (if decision found) | OUTPUT.DISCOVERIES, OUTPUT.ARCH_DECISIONS |
-| phase_1_5_openspec SUCCESS | architecture (specs), pattern (if reusable found) | .orquestador/phases/phase_1_5_openspec.json |
-| phase_2_backend/frontend SUCCESS | pattern (if plan reveals reusable structure) | .orquestador/phases/<id>.json |
+| phase_2_backend/frontend SUCCESS | pattern (if plan reveals reusable structure) | state.phases.<id> |
 | phase_3_coding SUCCESS | pattern (code structure discovered) | phase JSON: FILES_CREATED, spec_coverage |
 | checkpoint_X APPROVED | decision | checkpoint question/response |
 | phase_4_qa SUCCESS | learning (testing patterns) | phase JSON: QA_STATUS, failures |
@@ -53,7 +52,7 @@ After a phase completes with SUCCESS, the orquestador reads phase JSON and calls
 ```
 mem_save(
   title="Phase {phase_id}: {domain}",
-  content="**What**: {auto_extracted_what}\n**Why**: {from _pointer.user_request}\n**Where**: {files_created + files_modified}\n**Learned**: {extracted from phase structured_output if available}",
+  content="**What**: {auto_extracted_what}\n**Why**: {from state.user_request}\n**Where**: {files_created + files_modified}\n**Learned**: {extracted from phase structured_output if available}",
   type=resolve_type(phase_id),
   topic_key="phase/{phase_id}/{timestamp-short}",
   session_id=engram_session_id
@@ -64,7 +63,6 @@ The type resolver:
 
 ```
 phase_1_analyze       → discovery
-phase_1_5_openspec    → architecture
 phase_2_backend       → pattern
 phase_2_frontend      → pattern
 phase_3_coding        → pattern
@@ -110,7 +108,6 @@ phase/{phase_id}/{short-hash}         → phase-level artifacts
 decision/{checkpoint-id}/{topic}      → checkpoint decisions
 pattern/{stack}/{pattern-name}        → reusable code patterns (replaces knowledge/registry.json)
 learning/{pipeline-id}/summary        → learning outcomes
-architecture/{pipeline-id}/specs      → OpenSpec specs
 architecture/{pipeline-id}/decisions  → architectural decisions
 ```
 

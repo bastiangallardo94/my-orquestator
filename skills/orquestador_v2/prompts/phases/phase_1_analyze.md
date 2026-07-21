@@ -28,7 +28,14 @@ NOTA: Busqueda de memoria previa Engram NO se hace aqui — la maneja el orquest
      b. trace_path(project, function_name=X, direction="inbound", depth=2, risk_labels=true) → callers REALES con riesgo CRITICAL/HIGH/MEDIUM/LOW
      c. Callers CRITICAL/HIGH = RIESGO_ROTURA
      d. Si ruta HTTP/async: trace_path(mode="cross_service") para impacto entre servicios
-     e. Para strings literales/configs: search_code(pattern="...", mode="compact")
+      e. Para strings literales/configs: search_code(pattern="...", mode="compact")
+      f. Generar docs/impact-radar.md con:
+         - Endpoints que se modificaran (de openapi.yaml o search_graph route)
+         - Callers cross-service via trace_path(mode="cross_service")
+         - Flujos E2E existentes que tocan esos endpoints (specs/*.md, tests/*.spec.ts)
+         - Frontend components que consumen los endpoints (React/Angular)
+      g. Si RIESGO_ROTURA tiene elementos CRITICAL/HIGH:
+         - Incluir en el output como IMPACT_RADAR
    - Si no disponible: caer a search_strategy.md → FALLBACK (Glob + grep)
 4. Identifica funcionalidades existentes con riesgo de rotura.
 
@@ -49,13 +56,42 @@ Si FLOW == COMPLETO:
 
 10. Define casos de uso, casos borde y contratos.
 11. Clasifica impacto: BACKEND | FRONTEND | FULLSTACK.
-12. Agrega entrada en docs/CHANGELOG_LOGICO.md con:
+12. Agrega entrada en docs/CHANGELOG_LOGICO.md con formato estandar:
+
+    ```
+    ## Especificaciones
+
+    ### REQ-001: {nombre del requisito}
+    {El sistema SHALL/MUST/SHOULD/MAY ...}
+
+    #### Escenarios
+    - **SC-001** (happy path):
+      GIVEN {contexto}
+      WHEN {accion}
+      THEN {resultado esperado}
+
+    - **SC-002** (error):
+      GIVEN {precondicion de error}
+      WHEN {accion}
+      THEN {resultado de error}
+
+    ### REQ-002: ...
+    ```
+
+    Reglas del formato:
+    - REQ-XXX: ID secuencial por requisito
+    - SC-XXX: ID secuencial por escenario
+    - Cada REQ DEBE tener >= 2 escenarios (happy + error/edge)
+    - Usar RFC 2119: SHALL (obligatorio), SHOULD (recomendado), MAY (opcional)
+    - Formato GIVEN/WHEN/THEN/AND para escenarios
+    - Tipo de escenario: happy path, error, edge case, security
+
+13. Agrega seccion de Analisis de Impacto en CHANGELOG_LOGICO.md:
     - Fecha y descripcion breve
-    - Analisis de Impacto:
-      - Archivos a modificar: [lista]
-      - Archivos afectados (consumidores): [lista, con nivel de riesgo]
-      - Riesgo de rotura: [funcionalidades existentes que podrian fallar]
-13. Si nuevos endpoints → actualiza docs/openapi.yaml.
+    - Archivos a modificar: [lista]
+    - Archivos afectados (consumidores): [lista, con nivel de riesgo]
+    - Riesgo de rotura: [funcionalidades existentes que podrian fallar]
+14. Si nuevos endpoints → actualiza docs/openapi.yaml.
 
 ============================================================
 ## FASE 4: DOCUMENTACION EXTENDIDA (solo COMPLETO)
@@ -108,6 +144,9 @@ DEVUELVEME:
 - CONFLUENCE_URL: link o "NO_DISPONIBLE"
 - BD_SCHEMA: tablas o "MCP_NO_DISPONIBLE"
 - GRAFO_USADO: SI | NO
+- IMPACT_RADAR: {endpoints, callers, e2e_flows, risk_level} o "NINGUNO"
+- REQ_IDS: [REQ-001, REQ-002, ...] IDs de requisitos definidos
+- SCENARIOS: N total de escenarios GWT
 - DISCOVERIES: [lista de hallazgos clave para que el orquestador los guarde en Engram]
 - ARCH_DECISIONS: [decisiones arquitectonicas detectadas, si las hay, para Engram]
 - ERROR: solo si algo fallo
